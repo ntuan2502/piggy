@@ -25,7 +25,8 @@ const resources = {
                 pickDate: "Pick a date",
                 confirmDelete: "Are you sure you want to delete this?",
                 ok: "OK",
-                optional: "Optional"
+                optional: "Optional",
+                error: "An error occurred"
             },
             wallet: {
                 title: "Wallets",
@@ -40,6 +41,7 @@ const resources = {
                 select: "Select wallet",
                 initialBalance: "Initial Balance",
                 currentBalance: "Current Balance",
+                unknown: "Unknown Wallet",
                 description: "Manage your wallets and accounts",
                 setDefaultHelp: "This wallet will be selected by default when adding transactions.",
                 placeholderName: "Cash, Bank...",
@@ -98,6 +100,7 @@ const resources = {
                 parent: "Parent Category",
                 name: "Category Name",
                 none: "None (Root)",
+                unknown: "Unknown Category",
                 seeding: "Seeding...",
                 confirmDelete: "Are you sure you want to delete this category?"
             },
@@ -110,6 +113,13 @@ const resources = {
             },
             settings: {
                 title: "Settings",
+                userPreferences: "User Preferences",
+                userPreferencesDescription: "Customize your app experience",
+                recentTransactionsLimit: "Recent Transactions Display Limit",
+                recentTransactionsLimitHelp: "Number of transactions to show on dashboard (5-50)",
+                language: "Language",
+                languageChanged: "Language changed successfully",
+                preferencesSaved: "Preferences saved successfully",
                 dataManagement: "Data Management",
                 resetCategories: "Reset Default Categories (Money Lover style)",
                 preferenceDesc: "Manage your general preferences.",
@@ -144,7 +154,10 @@ const resources = {
                 pickDate: "Chọn ngày",
                 confirmDelete: "Bạn có chắc chắn muốn xóa không?",
                 ok: "Đồng ý",
-                optional: "Tùy chọn"
+                optional: "Tùy chọn",
+                none: "Không có",
+                saving: "Đang lưu...",
+                error: "Đã xảy ra lỗi"
             },
             wallet: {
                 title: "Ví tiền",
@@ -213,6 +226,7 @@ const resources = {
                 parent: "Danh mục cha",
                 name: "Tên danh mục",
                 none: "Không (Gốc)",
+                unknown: "Danh mục không xác định",
                 seeding: "Đang tạo dữ liệu...",
                 confirmDelete: "Bạn có chắc muốn xóa danh mục này?"
             },
@@ -225,6 +239,13 @@ const resources = {
             },
             settings: {
                 title: "Cài đặt",
+                userPreferences: "Tùy chọn cá nhân",
+                userPreferencesDescription: "Tùy chỉnh trải nghiệm ứng dụng",
+                recentTransactionsLimit: "Số giao dịch hiển thị gần đây",
+                recentTransactionsLimitHelp: "Số lượng giao dịch hiển thị trên dashboard (5-50)",
+                language: "Ngôn ngữ",
+                languageChanged: "Đã thay đổi ngôn ngữ thành công",
+                preferencesSaved: "Đã lưu tùy chọn thành công",
                 dataManagement: "Quản lý dữ liệu",
                 resetCategories: "Khôi phục danh mục mẫu (Kiểu Money Lover)",
                 preferenceDesc: "Quản lý các thiết lập chung.",

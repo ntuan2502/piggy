@@ -1,15 +1,40 @@
 "use client";
 import { useTransactions } from "@/hooks/use-transactions";
+import { useCategories } from "@/hooks/use-categories";
+import { useWallets } from "@/hooks/use-wallets";
+import { useUserProfile } from "@/hooks/use-user-profile";
 import { useTranslation } from "react-i18next";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatVNCurrency, formatVNDate } from "@/lib/format";
 
 export function RecentTransactions() {
     const { t } = useTranslation();
-    const { transactions, loading } = useTransactions();
+    const { profile } = useUserProfile();
+    const limit = profile?.recentTransactionsLimit || 10;
+    const { transactions, loading } = useTransactions(limit);
+    const { categories } = useCategories();
+    const { wallets } = useWallets();
 
     if (loading) return <div>{t('common.loading')}</div>;
+
+    // Helper to get category name
+    const getCategoryName = (categoryId: string) => {
+        const category = categories.find(c => c.id === categoryId);
+        return category?.name || t('category.unknown');
+    };
+
+    // Helper to get wallet name
+    const getWalletName = (walletId: string) => {
+        const wallet = wallets.find(w => w.id === walletId);
+        return wallet?.name || t('wallet.unknown');
+    };
+
+    // Helper to get wallet currency
+    const getWalletCurrency = (walletId: string) => {
+        const wallet = wallets.find(w => w.id === walletId);
+        return wallet?.currency || 'VND';
+    };
 
     return (
         <Card className="col-span-3">
@@ -17,33 +42,75 @@ export function RecentTransactions() {
                 <CardTitle>{t('transaction.recent')}</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="space-y-8">
-                    {transactions.map((transaction) => (
-                        <div key={transaction.id} className="flex items-center">
-                            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-800">
-                                {/* TODO: Category Icon */}
-                                {transaction.type === 'income' || transaction.type === 'loan' ? (
-                                    <ArrowDownLeft className="h-4 w-4 text-green-500" />
-                                ) : (
-                                    <ArrowUpRight className="h-4 w-4 text-red-500" />
-                                )}
+                <div className="space-y-4">
+                    {transactions.map((transaction) => {
+                        const isIncome = transaction.type === 'income' || transaction.type === 'loan';
+                        const currency = getWalletCurrency(transaction.walletId);
+
+                        return (
+                            <div key={transaction.id} className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                                {/* Icon */}
+                                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${transaction.isTransfer
+                                    ? 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'
+                                    : isIncome
+                                        ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                                        : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
+                                    }`}>
+                                    {transaction.isTransfer ? (
+                                        <ArrowRightLeft className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    ) : isIncome ? (
+                                        <ArrowDownLeft className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                    ) : (
+                                        <ArrowUpRight className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            {/* Note as main title (largest) */}
+                                            <p className="text-base font-semibold leading-tight mb-1.5 truncate">
+                                                {transaction.note || (
+                                                    transaction.isTransfer
+                                                        ? t('transaction.transfer')
+                                                        : getCategoryName(transaction.categoryId)
+                                                )}
+                                            </p>
+                                            {/* Date - Wallet - Category (smaller, below) */}
+                                            <p className="text-xs text-muted-foreground">
+                                                {formatVNDate(transaction.date)}
+                                                {" • "}
+                                                {getWalletName(transaction.walletId)}
+                                                {transaction.isTransfer && transaction.toWalletId && (
+                                                    <> → {getWalletName(transaction.toWalletId)}</>
+                                                )}
+                                                {!transaction.isTransfer && (
+                                                    <>
+                                                        {" • "}
+                                                        {getCategoryName(transaction.categoryId)}
+                                                    </>
+                                                )}
+                                            </p>
+                                        </div>
+
+                                        {/* Amount */}
+                                        <div className={`text-sm font-bold whitespace-nowrap ${transaction.isTransfer
+                                            ? 'text-blue-600 dark:text-blue-400'
+                                            : isIncome
+                                                ? 'text-green-600 dark:text-green-400'
+                                                : 'text-red-600 dark:text-red-400'
+                                            }`}>
+                                            {!transaction.isTransfer && (isIncome ? "+" : "-")}
+                                            {formatVNCurrency(transaction.amount)} {currency}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="ml-4 space-y-1">
-                                <p className="text-sm font-medium leading-none">
-                                    {/* Accessing category name would require joining or passing category map. For now simple. */}
-                                    {t('transaction.item')}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    {formatVNDate(transaction.date)}
-                                </p>
-                            </div>
-                            <div className={`ml-auto font-medium ${transaction.type === 'income' || transaction.type === 'loan' ? 'text-green-600' : 'text-red-600'}`}>
-                                {transaction.type === 'income' || transaction.type === 'loan' ? "+" : "-"}{formatVNCurrency(transaction.amount)}
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                     {transactions.length === 0 && (
-                        <p className="text-gray-500 text-sm">{t('transaction.noRecent')}</p>
+                        <p className="text-gray-500 text-sm text-center py-8">{t('transaction.noRecent')}</p>
                     )}
                 </div>
             </CardContent>

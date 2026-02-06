@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { UserProfile } from "@/types";
-import { doc, getDoc, setDoc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot, updateDoc, serverTimestamp, deleteField } from "firebase/firestore";
 
 const COLLECTION_NAME = "users";
 
@@ -18,8 +18,17 @@ export const createUserProfile = async (user: UserProfile) => {
 
 export const updateUserProfile = async (userId: string, data: Partial<Omit<UserProfile, "id" | "email" | "createdAt" | "updatedAt">>) => {
     const ref = doc(db, COLLECTION_NAME, userId);
+
+    // Convert undefined values to deleteField() to properly remove them from Firestore
+    const updateData: Record<string, unknown> = { ...data };
+    Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+            updateData[key] = deleteField();
+        }
+    });
+
     await updateDoc(ref, {
-        ...data,
+        ...updateData,
         updatedAt: serverTimestamp(),
     });
 };

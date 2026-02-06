@@ -77,11 +77,18 @@ export function TransactionForm({
     });
 
     // Set default wallet
+    const { setValue, watch } = form; // Destructure for effect dependencies
+    const walletId = watch("walletId");
+
     useEffect(() => {
-        if (profile?.defaultWalletId && !form.getValues("walletId")) {
-            form.setValue("walletId", profile.defaultWalletId);
+        if (profile?.defaultWalletId && !walletId) {
+            // Ensure the default wallet actually exists in the current list
+            const walletExists = wallets.some(w => w.id === profile.defaultWalletId);
+            if (walletExists) {
+                setValue("walletId", profile.defaultWalletId);
+            }
         }
-    }, [profile, form]);
+    }, [profile, wallets, walletId, setValue]);
 
     const onSubmit = async (values: z.infer<typeof transactionSchema>) => {
         if (!user) return;
@@ -158,6 +165,7 @@ export function TransactionForm({
                                 <Select
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
+                                    value={field.value}
                                     disabled={transaction?.isTransfer}
                                 >
                                     <FormControl>

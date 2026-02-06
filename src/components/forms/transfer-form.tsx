@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useWallets } from "@/hooks/use-wallets";
+import { useUserProfile } from "@/hooks/use-user-profile";
 import { addTransfer } from "@/services/transaction.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
     const { t } = useTranslation();
     const { user } = useAuth();
     const { wallets } = useWallets();
+    const { profile } = useUserProfile();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
@@ -57,6 +59,17 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
     const fromWalletId = watch("fromWalletId");
     const toWalletId = watch("toWalletId");
     const selectedDate = watch("date");
+
+    // Set default wallet
+    useEffect(() => {
+        if (profile?.defaultWalletId && !fromWalletId) {
+            // Check if default wallet exists in available wallets
+            const walletExists = wallets.some(w => w.id === profile.defaultWalletId);
+            if (walletExists) {
+                setValue("fromWalletId", profile.defaultWalletId);
+            }
+        }
+    }, [profile, wallets, fromWalletId, setValue]);
 
     // Filter wallets for "To" selector (exclude selected "From" wallet)
     const availableToWallets = wallets.filter((w) => w.id !== fromWalletId);

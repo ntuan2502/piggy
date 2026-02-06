@@ -1,17 +1,29 @@
 "use client";
 import { useAuth } from "@/components/providers/auth-provider";
 import ProtectedRoute from "@/components/layout/protected-route";
-import { Button } from "@/components/ui/button";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Wallet, PieChart, LogOut, Layers, Receipt } from "lucide-react";
-import { auth } from "@/lib/firebase"; // Direct import for signOut
-import { ModeToggle } from "@/components/ui/mode-toggle";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { LayoutDashboard, Wallet, PieChart, LogOut, Layers, Receipt, Settings, ChevronUp, User2 } from "lucide-react";
+import { auth } from "@/lib/firebase";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 import { MigrationModal } from "@/components/migration-modal";
 import { WalletInitializer } from "@/components/wallet-initializer";
+import { SettingsSync } from "@/components/settings-sync";
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarProvider,
+    SidebarRail,
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import "@/lib/i18n";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -25,53 +37,113 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         router.push("/login");
     };
 
+    // Get user initials for avatar
+    const getUserInitials = () => {
+        if (!user?.email) return "U";
+        const email = user.email;
+        return email.charAt(0).toUpperCase();
+    };
+
+    const navItems = [
+        { href: "/", icon: LayoutDashboard, label: t('common.dashboard') },
+        { href: "/wallets", icon: Wallet, label: t('wallet.title') },
+        { href: "/transactions", icon: Receipt, label: t('transaction.allTransactions') },
+        { href: "/reports", icon: PieChart, label: t('report.title') },
+        { href: "/settings", icon: Settings, label: t('settings.title') },
+    ];
+
     return (
         <ProtectedRoute>
             <WalletInitializer />
+            <SettingsSync />
             <MigrationModal />
-            <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-                {/* Sidebar */}
-                <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                        <h1 className="text-xl font-bold text-green-600">Piggy</h1>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
-                    </div>
-                    <nav className="flex-1 p-4 space-y-2">
-                        <Link href="/" className={cn("flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700", pathname === "/" && "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium")}>
-                            <LayoutDashboard size={20} /> {t('common.dashboard')}
-                        </Link>
-                        <Link href="/wallets" className={cn("flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700", pathname === "/wallets" && "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium")}>
-                            <Wallet size={20} /> {t('wallet.title')}
-                        </Link>
-                        <Link href="/transactions" className={cn("flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700", pathname === "/transactions" && "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium")}>
-                            <Receipt size={20} /> {t('transaction.allTransactions')}
-                        </Link>
-                        <Link href="/categories" className={cn("flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700", pathname === "/categories" && "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium")}>
-                            <Layers size={20} /> {t('category.title')}
-                        </Link>
-                        <Link href="/reports" className={cn("flex items-center gap-2 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700", pathname === "/reports" && "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium")}>
-                            <PieChart size={20} /> {t('report.title')}
-                        </Link>
-                    </nav>
-                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-                        <Button variant="ghost" className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
-                            <LogOut size={20} /> {t('common.logout')}
-                        </Button>
-                        <div className="flex justify-between items-center px-2">
-                            <span className="text-sm text-gray-500">{t('theme.toggle')}/{t('theme.lang')}</span>
-                            <div className="flex gap-1">
-                                <LanguageSwitcher />
-                                <ModeToggle />
-                            </div>
-                        </div>
-                    </div>
-                </aside>
+            <SidebarProvider>
+                <Sidebar collapsible="icon">
+                    <SidebarHeader>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton size="lg" asChild>
+                                    <Link href="/">
+                                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-green-600 text-white">
+                                            <span className="text-lg font-bold">P</span>
+                                        </div>
+                                        <div className="flex flex-col gap-0.5 leading-none">
+                                            <span className="font-semibold">Piggy</span>
+                                            <span className="text-xs text-muted-foreground">Finance Manager</span>
+                                        </div>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarHeader>
 
-                {/* Main Content */}
-                <main className="flex-1 overflow-auto p-8">
+                    <SidebarContent>
+                        <SidebarGroup>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {navItems.map((item) => (
+                                        <SidebarMenuItem key={item.href}>
+                                            <SidebarMenuButton
+                                                asChild
+                                                isActive={pathname === item.href}
+                                                tooltip={item.label}
+                                            >
+                                                <Link href={item.href}>
+                                                    <item.icon />
+                                                    <span>{item.label}</span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    </SidebarContent>
+
+                    <SidebarFooter>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <SidebarMenuButton size="lg">
+                                            <Avatar className="h-8 w-8">
+                                                {user?.photoURL && (
+                                                    <img src={user.photoURL} alt="Avatar" className="h-full w-full object-cover rounded-full" />
+                                                )}
+                                                <AvatarFallback className="bg-green-600 text-white">
+                                                    {getUserInitials()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex flex-col gap-0.5 leading-none">
+                                                <span className="font-semibold text-sm">{user?.displayName || 'User'}</span>
+                                                <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+                                            </div>
+                                            <ChevronUp className="ml-auto" />
+                                        </SidebarMenuButton>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/settings" className="cursor-pointer">
+                                                <Settings className="h-4 w-4" />
+                                                <span>{t('settings.title')}</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                                            <LogOut className="h-4 w-4" />
+                                            <span>{t('common.logout')}</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarFooter>
+                    <SidebarRail />
+                </Sidebar>
+
+                <main className="flex-1 overflow-auto p-4 md:p-8">
                     {children}
                 </main>
-            </div>
+            </SidebarProvider>
         </ProtectedRoute>
     );
 }

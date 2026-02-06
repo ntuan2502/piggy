@@ -146,6 +146,7 @@ export const subscribeToTransactions = (userId: string, callback: (transactions:
         collection(db, COLLECTION_NAME),
         where("userId", "==", userId),
         orderBy("date", "desc"),
+        orderBy("createdAt", "desc"),
         limit(limitCount)
     );
     return onSnapshot(q, (snapshot) => {

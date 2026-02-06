@@ -53,6 +53,9 @@ export interface UserProfile {
     email: string;
     defaultWalletId?: string;
     currency?: string;
+    recentTransactionsLimit?: number; // Default: 10
+    language?: 'en' | 'vi';          // Default: 'en'
+    theme?: 'light' | 'dark' | 'system'; // Default: 'light'
     createdAt?: Date | Timestamp;
     updatedAt?: Date | Timestamp;
 }

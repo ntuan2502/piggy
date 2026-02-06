@@ -4,7 +4,7 @@ import { subscribeToTransactions } from "@/services/transaction.service";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Transaction } from "@/types";
 
-export function useTransactions() {
+export function useTransactions(limit?: number) {
     const { user } = useAuth();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
@@ -23,12 +23,12 @@ export function useTransactions() {
                 setTransactions(data);
                 setLoading(false);
             }
-        });
+        }, limit);
         return () => {
             mounted = false;
             unsubscribe();
         };
-    }, [user]);
+    }, [user, limit]);
 
     return { transactions, loading };
 }
