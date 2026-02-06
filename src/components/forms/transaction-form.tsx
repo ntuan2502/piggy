@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ArrowRightLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useWallets } from "@/hooks/use-wallets";
@@ -128,10 +128,19 @@ export function TransactionForm({
                 setActiveTab(val);
                 form.setValue("categoryId", "");
             }}>
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                    <TabsTrigger value="expense">{t('transaction.expense')}</TabsTrigger>
-                    <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
-                </TabsList>
+                {!transaction?.isTransfer && (
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="expense">{t('transaction.expense')}</TabsTrigger>
+                        <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
+                    </TabsList>
+                )}
+
+                {transaction?.isTransfer && (
+                    <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-md mb-4 flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                        <ArrowRightLeft className="h-4 w-4" />
+                        <span>{t('transaction.transferEditInfo') || "Giao dịch chuyển khoản. Không được phép đổi ví hoặc danh mục."}</span>
+                    </div>
+                )}
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <TabsContent value="expense" className="mt-0">
@@ -146,7 +155,11 @@ export function TransactionForm({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>{t('wallet.title')}</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    disabled={transaction?.isTransfer}
+                                >
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder={t('wallet.select')} />
@@ -175,29 +188,40 @@ export function TransactionForm({
                             return (
                                 <FormItem>
                                     <FormLabel>{t('category.item')}</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                        value={field.value}
+                                        disabled={transaction?.isTransfer}
+                                    >
                                         <FormControl>
                                             <SelectTrigger>
                                                 <SelectValue placeholder={t('category.select')} />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {rootCategories.map(root => (
-                                                <div key={root.id}>
-                                                    <SelectItem value={root.id} className="font-semibold">
-                                                        {root.name}
-                                                    </SelectItem>
-                                                    {getChildren(root.id).map(child => (
-                                                        <SelectItem key={child.id} value={child.id} className="pl-4 text-muted-foreground">
-                                                            ↳ {child.name}
-                                                        </SelectItem>
+                                            {transaction?.isTransfer ? (
+                                                <SelectItem value="transfer">{t('transaction.transfer')}</SelectItem>
+                                            ) : (
+                                                <>
+                                                    {rootCategories.map(root => (
+                                                        <div key={root.id}>
+                                                            <SelectItem value={root.id} className="font-semibold">
+                                                                {root.name}
+                                                            </SelectItem>
+                                                            {getChildren(root.id).map(child => (
+                                                                <SelectItem key={child.id} value={child.id} className="pl-4 text-muted-foreground">
+                                                                    ↳ {child.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </div>
                                                     ))}
-                                                </div>
-                                            ))}
-                                            {rootCategories.length === 0 && (
-                                                <div className="p-2 text-sm text-center text-muted-foreground">
-                                                    {t('No categories found')}
-                                                </div>
+                                                    {rootCategories.length === 0 && (
+                                                        <div className="p-2 text-sm text-center text-muted-foreground">
+                                                            {t('No categories found')}
+                                                        </div>
+                                                    )}
+                                                </>
                                             )}
                                         </SelectContent>
                                     </Select>
@@ -302,7 +326,7 @@ export function TransactionForm({
 
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     <Button type="submit" className="w-full">
-                        {t('transaction.add')}
+                        {mode === "edit" ? t('transaction.edit') : t('transaction.add')}
                     </Button>
                 </form>
             </Tabs>

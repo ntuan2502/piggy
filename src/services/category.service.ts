@@ -1,11 +1,15 @@
 import { db } from "@/lib/firebase";
 import { Category } from "@/types";
-import { collection, addDoc, query, where, getDocs, onSnapshot, writeBatch, doc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, onSnapshot, writeBatch, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 
 const COLLECTION_NAME = "categories";
 
-export const addCategory = async (category: Omit<Category, "id">) => {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), category);
+export const addCategory = async (category: Omit<Category, "id" | "createdAt" | "updatedAt">) => {
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+        ...category,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    });
     return docRef.id;
 };
 
@@ -56,7 +60,9 @@ export const seedCategories = async (userId: string) => {
                 icon: p.icon,
                 color: p.color,
                 parentId: null,
-                isDefault: true
+                isDefault: true,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
             });
             parentRefs[p.name] = ref.id;
             opsCount++;
@@ -92,7 +98,9 @@ export const seedCategories = async (userId: string) => {
                 icon: "Circle",
                 color: "#9ca3af",
                 parentId: parentId,
-                isDefault: true
+                isDefault: true,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
             });
             opsCount++;
         }
@@ -103,9 +111,12 @@ export const seedCategories = async (userId: string) => {
     }
 };
 
-export const updateCategory = async (id: string, data: Partial<Omit<Category, "id">>) => {
+export const updateCategory = async (id: string, data: Partial<Omit<Category, "id" | "createdAt" | "updatedAt">>) => {
     const docRef = doc(db, COLLECTION_NAME, id);
-    await import("firebase/firestore").then(m => m.updateDoc(docRef, data));
+    await updateDoc(docRef, {
+        ...data,
+        updatedAt: serverTimestamp(),
+    });
 };
 
 export const deleteCategory = async (id: string) => {

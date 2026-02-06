@@ -5,7 +5,7 @@ import { collection, query, where, onSnapshot, orderBy, limit, serverTimestamp, 
 const COLLECTION_NAME = "transactions";
 const WALLET_COLLECTION = "wallets";
 
-export const addTransaction = async (userId: string, transaction: Omit<Transaction, "id" | "userId" | "createdAt">) => {
+export const addTransaction = async (userId: string, transaction: Omit<Transaction, "id" | "userId" | "createdAt" | "updatedAt">) => {
     try {
         await runTransaction(db, async (transactionCommon) => {
             // 1. Create Transaction Ref
@@ -49,6 +49,7 @@ export const addTransaction = async (userId: string, transaction: Omit<Transacti
                 ...transaction,
                 userId,
                 createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
             });
         });
 
@@ -57,6 +58,88 @@ export const addTransaction = async (userId: string, transaction: Omit<Transacti
         throw e;
     }
 };
+
+/**
+ * Create a transfer between two wallets
+ * Creates two linked transactions: expense from source, income to destination
+ */
+export const addTransfer = async (
+    userId: string,
+    fromWalletId: string,
+    toWalletId: string,
+    amount: number,
+    date: Date,
+    note?: string
+) => {
+    try {
+        await runTransaction(db, async (firestoreTransaction) => {
+            // 1. Create transaction refs
+            const expenseTransactionRef = doc(collection(db, COLLECTION_NAME));
+            const incomeTransactionRef = doc(collection(db, COLLECTION_NAME));
+
+            // 2. Get both wallets
+            const fromWalletRef = doc(db, WALLET_COLLECTION, fromWalletId);
+            const toWalletRef = doc(db, WALLET_COLLECTION, toWalletId);
+
+            const fromWalletDoc = await firestoreTransaction.get(fromWalletRef);
+            const toWalletDoc = await firestoreTransaction.get(toWalletRef);
+
+            if (!fromWalletDoc.exists()) {
+                throw "Source wallet does not exist!";
+            }
+            if (!toWalletDoc.exists()) {
+                throw "Destination wallet does not exist!";
+            }
+
+            // 3. Calculate new balances
+            const fromWalletData = fromWalletDoc.data();
+            const toWalletData = toWalletDoc.data();
+
+            const newFromBalance = (fromWalletData.balance || 0) - amount;
+            const newToBalance = (toWalletData.balance || 0) + amount;
+
+            // 4. Update wallet balances
+            firestoreTransaction.update(fromWalletRef, { balance: newFromBalance });
+            firestoreTransaction.update(toWalletRef, { balance: newToBalance });
+
+            // 5. Create expense transaction (from source wallet)
+            firestoreTransaction.set(expenseTransactionRef, {
+                userId,
+                walletId: fromWalletId,
+                categoryId: "transfer", // Special category for transfers
+                amount,
+                date,
+                note: note || `Transfer to ${toWalletData.name}`,
+                type: "expense",
+                isTransfer: true,
+                linkedTransactionId: incomeTransactionRef.id,
+                toWalletId: toWalletId,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            });
+
+            // 6. Create income transaction (to destination wallet)
+            firestoreTransaction.set(incomeTransactionRef, {
+                userId,
+                walletId: toWalletId,
+                categoryId: "transfer", // Special category for transfers
+                amount,
+                date,
+                note: note || `Transfer from ${fromWalletData.name}`,
+                type: "income",
+                isTransfer: true,
+                linkedTransactionId: expenseTransactionRef.id,
+                toWalletId: fromWalletId, // Store source wallet for reference
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            });
+        });
+    } catch (e) {
+        console.error("Transfer failed: ", e);
+        throw e;
+    }
+};
+
 
 export const subscribeToTransactions = (userId: string, callback: (transactions: Transaction[]) => void, limitCount = 20) => {
     const q = query(
@@ -82,10 +165,13 @@ export const subscribeToTransactions = (userId: string, callback: (transactions:
 export const updateTransaction = async (
     transactionId: string,
     userId: string,
-    updates: Partial<Omit<Transaction, "id" | "userId" | "createdAt">>
+    updates: Partial<Omit<Transaction, "id" | "userId" | "createdAt" | "updatedAt">>
 ) => {
     try {
         await runTransaction(db, async (firestoreTransaction) => {
+            // ===== PHASE 1: ALL READS =====
+
+            // 1. Read main transaction
             const transactionRef = doc(db, COLLECTION_NAME, transactionId);
             const transactionDoc = await firestoreTransaction.get(transactionRef);
 
@@ -100,7 +186,7 @@ export const updateTransaction = async (
                 throw "Unauthorized!";
             }
 
-            // Get wallet
+            // 2. Read main wallet
             const walletRef = doc(db, WALLET_COLLECTION, oldData.walletId);
             const walletDoc = await firestoreTransaction.get(walletRef);
 
@@ -109,30 +195,95 @@ export const updateTransaction = async (
             }
 
             const walletData = walletDoc.data();
-            let currentBalance = walletData.balance || 0;
 
-            // Revert old transaction effect
-            if (oldData.type === 'income' || oldData.type === 'debt') {
-                currentBalance -= oldData.amount;
-            } else if (oldData.type === 'expense' || oldData.type === 'loan') {
-                currentBalance += oldData.amount;
+            // 3. If transfer, read linked info
+            let linkedTransactionRef = null;
+            let linkedTransactionData = null;
+            let linkedWalletRef = null;
+            let linkedWalletData = null;
+
+            if (oldData.isTransfer && oldData.linkedTransactionId) {
+                linkedTransactionRef = doc(db, COLLECTION_NAME, oldData.linkedTransactionId);
+                const linkedTransactionDoc = await firestoreTransaction.get(linkedTransactionRef);
+
+                if (linkedTransactionDoc.exists()) {
+                    linkedTransactionData = linkedTransactionDoc.data() as Transaction;
+                    linkedWalletRef = doc(db, WALLET_COLLECTION, linkedTransactionData.walletId);
+                    const linkedWalletDoc = await firestoreTransaction.get(linkedWalletRef);
+                    if (linkedWalletDoc.exists()) {
+                        linkedWalletData = linkedWalletDoc.data();
+                    }
+                }
             }
 
-            // Apply new transaction effect
-            const newAmount = updates.amount ?? oldData.amount;
-            const newType = updates.type ?? oldData.type;
+            // ===== PHASE 2: ALL WRITES =====
 
-            if (newType === 'income' || newType === 'debt') {
-                currentBalance += newAmount;
-            } else if (newType === 'expense' || newType === 'loan') {
-                currentBalance -= newAmount;
+            // Handle Non-Transfer Case
+            if (!oldData.isTransfer) {
+                let currentBalance = walletData.balance || 0;
+
+                // Revert old transaction effect
+                if (oldData.type === 'income' || oldData.type === 'debt') {
+                    currentBalance -= oldData.amount;
+                } else if (oldData.type === 'expense' || oldData.type === 'loan') {
+                    currentBalance += oldData.amount;
+                }
+
+                // Apply new transaction effect
+                const newAmount = updates.amount ?? oldData.amount;
+                const newType = updates.type ?? oldData.type;
+
+                if (newType === 'income' || newType === 'debt') {
+                    currentBalance += newAmount;
+                } else if (newType === 'expense' || newType === 'loan') {
+                    currentBalance -= newAmount;
+                }
+
+                firestoreTransaction.update(walletRef, { balance: currentBalance });
+                firestoreTransaction.update(transactionRef, {
+                    ...updates,
+                    updatedAt: serverTimestamp()
+                });
             }
+            // Handle Transfer Case
+            else if (linkedTransactionData && linkedWalletData && linkedWalletRef && linkedTransactionRef) {
+                // Revert both wallets
+                let mainBalance = walletData.balance || 0;
+                let linkedBalance = linkedWalletData.balance || 0;
 
-            // Update wallet balance
-            firestoreTransaction.update(walletRef, { balance: currentBalance });
+                // Revert main (oldData.type is either income or expense)
+                if (oldData.type === 'income') mainBalance -= oldData.amount;
+                else mainBalance += oldData.amount;
 
-            // Update transaction
-            firestoreTransaction.update(transactionRef, updates);
+                // Revert linked
+                if (linkedTransactionData.type === 'income') linkedBalance -= linkedTransactionData.amount;
+                else linkedBalance += linkedTransactionData.amount;
+
+                // Apply new values (Amount is shared)
+                const newAmount = updates.amount ?? oldData.amount;
+
+                // Re-apply to main
+                if (oldData.type === 'income') mainBalance += newAmount;
+                else mainBalance -= newAmount;
+
+                // Re-apply to linked
+                if (linkedTransactionData.type === 'income') linkedBalance += newAmount;
+                else linkedBalance -= newAmount;
+
+                // Prepare synced updates (date, amount, note)
+                const syncedUpdates = {
+                    amount: newAmount,
+                    date: updates.date ?? oldData.date,
+                    note: updates.note ?? oldData.note,
+                    updatedAt: serverTimestamp(),
+                };
+
+                // Update everything
+                firestoreTransaction.update(walletRef, { balance: mainBalance });
+                firestoreTransaction.update(linkedWalletRef, { balance: linkedBalance });
+                firestoreTransaction.update(transactionRef, syncedUpdates);
+                firestoreTransaction.update(linkedTransactionRef, syncedUpdates);
+            }
         });
     } catch (e) {
         console.error("Update transaction failed: ", e);
@@ -143,6 +294,9 @@ export const updateTransaction = async (
 export const deleteTransaction = async (transactionId: string, userId: string) => {
     try {
         await runTransaction(db, async (firestoreTransaction) => {
+            // ===== PHASE 1: ALL READS =====
+
+            // 1. Read main transaction
             const transactionRef = doc(db, COLLECTION_NAME, transactionId);
             const transactionDoc = await firestoreTransaction.get(transactionRef);
 
@@ -157,7 +311,7 @@ export const deleteTransaction = async (transactionId: string, userId: string) =
                 throw "Unauthorized!";
             }
 
-            // Get wallet
+            // 2. Read main wallet
             const walletRef = doc(db, WALLET_COLLECTION, transactionData.walletId);
             const walletDoc = await firestoreTransaction.get(walletRef);
 
@@ -166,20 +320,58 @@ export const deleteTransaction = async (transactionId: string, userId: string) =
             }
 
             const walletData = walletDoc.data();
-            let currentBalance = walletData.balance || 0;
 
-            // Revert transaction effect
+            // 3. If transfer, read linked transaction and wallet BEFORE any writes
+            let linkedTransactionRef = null;
+            let linkedTransactionData = null;
+            let linkedWalletRef = null;
+            let linkedWalletData = null;
+
+            if (transactionData.isTransfer && transactionData.linkedTransactionId) {
+                linkedTransactionRef = doc(db, COLLECTION_NAME, transactionData.linkedTransactionId);
+                const linkedTransactionDoc = await firestoreTransaction.get(linkedTransactionRef);
+
+                if (linkedTransactionDoc.exists()) {
+                    linkedTransactionData = linkedTransactionDoc.data() as Transaction;
+
+                    // Read linked wallet
+                    linkedWalletRef = doc(db, WALLET_COLLECTION, linkedTransactionData.walletId);
+                    const linkedWalletDoc = await firestoreTransaction.get(linkedWalletRef);
+
+                    if (linkedWalletDoc.exists()) {
+                        linkedWalletData = linkedWalletDoc.data();
+                    }
+                }
+            }
+
+            // ===== PHASE 2: ALL WRITES =====
+
+            // 1. Revert main transaction effect on main wallet
+            let currentBalance = walletData.balance || 0;
             if (transactionData.type === 'income' || transactionData.type === 'debt') {
                 currentBalance -= transactionData.amount;
             } else if (transactionData.type === 'expense' || transactionData.type === 'loan') {
                 currentBalance += transactionData.amount;
             }
-
-            // Update wallet balance
             firestoreTransaction.update(walletRef, { balance: currentBalance });
 
-            // Delete transaction
+            // 2. Delete main transaction
             firestoreTransaction.delete(transactionRef);
+
+            // 3. If transfer, revert linked transaction and delete it
+            if (linkedTransactionData && linkedWalletData && linkedWalletRef && linkedTransactionRef) {
+                let linkedBalance = linkedWalletData.balance || 0;
+
+                // Revert linked transaction effect
+                if (linkedTransactionData.type === 'income' || linkedTransactionData.type === 'debt') {
+                    linkedBalance -= linkedTransactionData.amount;
+                } else if (linkedTransactionData.type === 'expense' || linkedTransactionData.type === 'loan') {
+                    linkedBalance += linkedTransactionData.amount;
+                }
+
+                firestoreTransaction.update(linkedWalletRef, { balance: linkedBalance });
+                firestoreTransaction.delete(linkedTransactionRef);
+            }
         });
     } catch (e) {
         console.error("Delete transaction failed: ", e);

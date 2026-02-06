@@ -8,11 +8,13 @@ export interface Wallet {
     userId: string;
     name: string;
     balance: number;
+    initialBalance: number;
     currency: 'VND' | 'USD';
     type: WalletType;
     icon?: string;
     color?: string;
     createdAt: Date | Timestamp;
+    updatedAt?: Date | Timestamp;
 }
 
 export interface Category {
@@ -24,6 +26,8 @@ export interface Category {
     parentId?: string;
     color?: string;
     isDefault?: boolean;
+    createdAt?: Date | Timestamp;
+    updatedAt?: Date | Timestamp;
 }
 
 export interface Transaction {
@@ -37,6 +41,11 @@ export interface Transaction {
     tags?: string[];
     type: TransactionType;
     createdAt: Date | Timestamp;
+    updatedAt?: Date | Timestamp;
+    // Transfer-related fields
+    isTransfer?: boolean;           // Flag to identify transfer transactions
+    linkedTransactionId?: string;   // Link to paired transaction (for transfers)
+    toWalletId?: string;            // Destination wallet ID (for display purposes)
 }
 
 export interface UserProfile {
@@ -44,4 +53,6 @@ export interface UserProfile {
     email: string;
     defaultWalletId?: string;
     currency?: string;
+    createdAt?: Date | Timestamp;
+    updatedAt?: Date | Timestamp;
 }

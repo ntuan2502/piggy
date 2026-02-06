@@ -24,7 +24,8 @@ const resources = {
                 tags: "Tags",
                 pickDate: "Pick a date",
                 confirmDelete: "Are you sure you want to delete this?",
-                ok: "OK"
+                ok: "OK",
+                optional: "Optional"
             },
             wallet: {
                 title: "Wallets",
@@ -34,10 +35,11 @@ const resources = {
                 active: "Active Wallets",
                 totalBalance: "Total Balance",
                 name: "Wallet Name",
-                initialBalance: "Initial Balance",
                 currency: "Currency",
                 default: "Default Wallet",
                 select: "Select wallet",
+                initialBalance: "Initial Balance",
+                currentBalance: "Current Balance",
                 description: "Manage your wallets and accounts",
                 setDefaultHelp: "This wallet will be selected by default when adding transactions.",
                 placeholderName: "Cash, Bank...",
@@ -64,6 +66,7 @@ const resources = {
                 expense: "Expense",
                 debt: "Debt",
                 loan: "Loan",
+                transfer: "Transfer",
                 noRecent: "No recent transactions",
                 description: "Record a new income or expense.",
                 manage: "Manage Transactions",
@@ -77,7 +80,13 @@ const resources = {
                 searchPlaceholder: "Search by category, wallet, note...",
                 filter: "Filter",
                 all: "All",
-                noTransactions: "No transactions found"
+                noTransactions: "No transactions found",
+                fromWallet: "From Wallet",
+                toWallet: "To Wallet",
+                transferSuccess: "Transfer completed successfully",
+                transferNote: "Transfer",
+                editTransferNotSupported: "Editing transfer transactions is not supported yet. Please delete and create a new transfer.",
+                transferEditInfo: "Transfer transaction. Changing wallets or categories is not allowed."
             },
             category: {
                 title: "Categories",
@@ -134,7 +143,8 @@ const resources = {
                 tags: "Thẻ (Tags)",
                 pickDate: "Chọn ngày",
                 confirmDelete: "Bạn có chắc chắn muốn xóa không?",
-                ok: "Đồng ý"
+                ok: "Đồng ý",
+                optional: "Tùy chọn"
             },
             wallet: {
                 title: "Ví tiền",
@@ -142,9 +152,6 @@ const resources = {
                 create: "Tạo ví",
                 edit: "Sửa ví",
                 active: "Ví đang dùng",
-                totalBalance: "Tổng số dư",
-                name: "Tên ví",
-                initialBalance: "Số dư ban đầu",
                 currency: "Đơn vị tiền tệ",
                 default: "Ví mặc định",
                 select: "Chọn ví",
@@ -174,6 +181,7 @@ const resources = {
                 expense: "Chi tiêu",
                 debt: "Đi vay",
                 loan: "Cho vay",
+                transfer: "Chuyển tiền",
                 noRecent: "Chưa có giao dịch nào",
                 description: "Ghi lại thu nhập hoặc chi tiêu mới.",
                 manage: "Quản lý giao dịch",
@@ -187,7 +195,13 @@ const resources = {
                 searchPlaceholder: "Tìm theo danh mục, ví, ghi chú...",
                 filter: "Lọc",
                 all: "Tất cả",
-                noTransactions: "Không tìm thấy giao dịch nào"
+                noTransactions: "Không tìm thấy giao dịch nào",
+                fromWallet: "Từ ví",
+                toWallet: "Đến ví",
+                transferSuccess: "Chuyển tiền thành công",
+                transferNote: "Chuyển tiền",
+                editTransferNotSupported: "Chức năng sửa giao dịch chuyển khoản đang được phát triển. Vui lòng xóa và tạo lại.",
+                transferEditInfo: "Giao dịch chuyển khoản. Không được phép đổi ví hoặc danh mục."
             },
             category: {
                 title: "Danh mục",
