@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addWallet, updateWallet, deleteWallet } from "@/services/wallet.service";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useState } from "react";
-import { Wallet } from "@/types";
+import { Wallet, WalletType } from "@/types";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { formatVNCurrency, formatVNCurrencyInput, parseVNCurrency } from "@/lib/format";
@@ -30,6 +30,7 @@ const walletSchema = z.object({
     name: z.string().min(1, "Name is required"),
     balance: z.number(),
     currency: z.enum(["VND", "USD"]),
+    type: z.enum(["available", "credit"]),
 });
 
 interface WalletFormProps {
@@ -50,10 +51,12 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
             name: wallet.name,
             balance: wallet.balance,
             currency: wallet.currency,
+            type: wallet.type,
         } : {
             name: "",
             balance: 0,
             currency: "VND",
+            type: "available" as WalletType,
         },
     });
 
@@ -67,6 +70,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                     name: values.name,
                     balance: values.balance,
                     currency: values.currency,
+                    type: values.type,
                 });
                 toast.success(t('wallet.updateSuccess') || 'Wallet updated successfully');
             } else {
@@ -75,6 +79,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                     name: values.name,
                     balance: values.balance,
                     currency: values.currency,
+                    type: values.type,
                     icon: "wallet",
                     color: "#000000",
                 });
@@ -157,6 +162,27 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                                 <SelectContent>
                                     <SelectItem value="VND">VND</SelectItem>
                                     <SelectItem value="USD">USD</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('wallet.type')}</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('wallet.selectType')} />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="available">{t('wallet.typeAvailable')}</SelectItem>
+                                    <SelectItem value="credit">{t('wallet.typeCredit')}</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage />

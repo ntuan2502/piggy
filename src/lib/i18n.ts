@@ -46,7 +46,15 @@ const resources = {
                 updateSuccess: "Wallet updated successfully",
                 deleteSuccess: "Wallet deleted successfully",
                 deleteFailed: "Failed to delete wallet",
-                confirmDelete: "Are you sure you want to delete this wallet? This action cannot be undone."
+                confirmDelete: "Are you sure you want to delete this wallet? This action cannot be undone.",
+                type: "Wallet Type",
+                typeAvailable: "Available Money",
+                typeCredit: "Credit Account",
+                selectType: "Select wallet type",
+                availableTotal: "Total Available",
+                creditTotal: "Total Debt",
+                netWorth: "Net Worth",
+                noCreditAccounts: "No credit accounts yet"
             },
             transaction: {
                 add: "Add Transaction",
@@ -148,7 +156,15 @@ const resources = {
                 updateSuccess: "Đã cập nhật ví thành công",
                 deleteSuccess: "Đã xóa ví thành công",
                 deleteFailed: "Xóa ví thất bại",
-                confirmDelete: "Bạn có chắc chắn muốn xóa ví này? Hành động này không thể hoàn tác."
+                confirmDelete: "Bạn có chắc chắn muốn xóa ví này? Hành động này không thể hoàn tác.",
+                type: "Loại ví",
+                typeAvailable: "Tiền có sẵn",
+                typeCredit: "Tài khoản tín dụng",
+                selectType: "Chọn loại ví",
+                availableTotal: "Tổng tiền có sẵn",
+                creditTotal: "Tổng nợ",
+                netWorth: "Tài sản ròng",
+                noCreditAccounts: "Chưa có tài khoản tín dụng nào"
             },
             transaction: {
                 add: "Thêm giao dịch",

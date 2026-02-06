@@ -1,37 +1,28 @@
 "use client";
-import { useState, useEffect } from "react";
-import { subscribeToWallets, createDefaultWallet } from "@/services/wallet.service";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useEffect, useState } from "react";
 import { Wallet } from "@/types";
+import { subscribeToWallets } from "@/services/wallet.service";
+import { useAuth } from "@/components/providers/auth-provider";
 
-export function useWallets() {
+export const useWallets = () => {
     const { user } = useAuth();
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        let mounted = true;
         if (!user) {
-            const timer = setTimeout(() => {
-                setWallets([]);
-                setLoading(false);
-            }, 0);
-            return () => clearTimeout(timer);
+            setWallets([]);
+            setLoading(false);
+            return;
         }
-        const unsubscribe = subscribeToWallets(user.uid, (data) => {
-            if (mounted) {
-                setWallets(data);
-                setLoading(false);
-                if (data.length === 0) {
-                    createDefaultWallet(user.uid);
-                }
-            }
+
+        const unsubscribe = subscribeToWallets(user.uid, (fetchedWallets) => {
+            setWallets(fetchedWallets);
+            setLoading(false);
         });
-        return () => {
-            mounted = false;
-            unsubscribe();
-        };
+
+        return () => unsubscribe();
     }, [user]);
 
     return { wallets, loading };
-}
+};

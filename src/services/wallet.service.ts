@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { Wallet } from "@/types";
+import { Wallet, WalletType } from "@/types";
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, serverTimestamp, getDocs } from "firebase/firestore";
 
 const COLLECTION_NAME = "wallets";
@@ -32,6 +32,20 @@ export const subscribeToWallets = (userId: string, callback: (wallets: Wallet[])
         callback(wallets);
     });
 };
+
+export const getWalletsByType = async (userId: string, type: WalletType): Promise<Wallet[]> => {
+    const q = query(
+        collection(db, COLLECTION_NAME),
+        where("userId", "==", userId),
+        where("type", "==", type)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as Wallet[];
+};
+
 export const createDefaultWallet = async (userId: string) => {
     const q = query(collection(db, COLLECTION_NAME), where("userId", "==", userId));
     const snapshot = await getDocs(q);
@@ -40,6 +54,7 @@ export const createDefaultWallet = async (userId: string) => {
             name: "Cash",
             balance: 0,
             currency: "VND",
+            type: "available",
             color: "#16a34a", // green-600
             icon: "Wallet"
         });

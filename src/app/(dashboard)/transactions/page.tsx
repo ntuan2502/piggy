@@ -193,56 +193,62 @@ export default function TransactionsPage() {
                 </Card>
             ) : (
                 <Card>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[120px]">{t('common.date')}</TableHead>
-                                <TableHead>{t('category.title')}</TableHead>
-                                <TableHead>{t('wallet.title')}</TableHead>
-                                <TableHead className="w-[100px]">{t('transaction.item')}</TableHead>
-                                <TableHead className="text-right w-[150px]">{t('common.amount')}</TableHead>
-                                <TableHead className="text-right w-[100px]">{t('common.actions')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredTransactions.map((transaction) => (
-                                <TableRow key={transaction.id} className="hover:bg-muted/50">
-                                    <TableCell className="font-medium">{formatVNDate(transaction.date)}</TableCell>
-                                    <TableCell>{getCategoryName(transaction.categoryId)}</TableCell>
-                                    <TableCell className="text-muted-foreground">{getWalletName(transaction.walletId)}</TableCell>
-                                    <TableCell>
-                                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${getTypeColor(transaction.type)}`}>
-                                            {t(`transaction.${transaction.type}`)}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className={`text-right font-semibold ${getTypeColor(transaction.type)}`}>
-                                        {transaction.type === 'income' || transaction.type === 'debt' ? '+' : '-'}
-                                        {formatVNCurrency(transaction.amount)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => handleEdit(transaction)}
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                                onClick={() => handleDeleteClick(transaction.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[120px] pl-6">{t('common.date')}</TableHead>
+                                    <TableHead>{t('category.title')}</TableHead>
+                                    <TableHead>{t('wallet.title')}</TableHead>
+                                    <TableHead>{t('common.note')}</TableHead>
+                                    <TableHead className="w-[120px]">{t('transaction.item')}</TableHead>
+                                    <TableHead className="text-right w-[150px]">{t('common.amount')}</TableHead>
+                                    <TableHead className="text-right w-[100px] pr-6">{t('common.actions')}</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredTransactions.map((transaction) => (
+                                    <TableRow key={transaction.id} className="hover:bg-muted/50">
+                                        <TableCell className="font-medium whitespace-nowrap pl-6">{formatVNDate(transaction.date)}</TableCell>
+                                        <TableCell>{getCategoryName(transaction.categoryId)}</TableCell>
+                                        <TableCell className="text-muted-foreground">{getWalletName(transaction.walletId)}</TableCell>
+                                        <TableCell className="max-w-[200px] truncate" title={transaction.note}>
+                                            {transaction.note || "-"}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${getTypeColor(transaction.type)}`}>
+                                                {t(`transaction.${transaction.type}`)}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className={`text-right font-semibold whitespace-nowrap ${getTypeColor(transaction.type)}`}>
+                                            {transaction.type === 'income' || transaction.type === 'debt' ? '+' : '-'}
+                                            {formatVNCurrency(transaction.amount)}
+                                        </TableCell>
+                                        <TableCell className="text-right pr-6">
+                                            <div className="flex justify-end gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => handleEdit(transaction)}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                                    onClick={() => handleDeleteClick(transaction.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
                 </Card>
             )}
 

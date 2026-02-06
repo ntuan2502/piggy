@@ -15,9 +15,12 @@ export default function DashboardPage() {
     const { wallets } = useWallets();
     const [open, setOpen] = useState(false);
 
-    const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
-    // Note: Simple sum assumes same currency or ignores currency mix. 
-    // Proper app should normalize currency. For MVP we create mixed sum or just show first currency logic.
+    const { availableTotal, creditTotal, netWorth } = wallets.reduce((acc, w) => {
+        if (w.type === 'available') acc.availableTotal += w.balance;
+        if (w.type === 'credit') acc.creditTotal += w.balance;
+        acc.netWorth += w.balance;
+        return acc;
+    }, { availableTotal: 0, creditTotal: 0, netWorth: 0 });
 
     return (
         <div className="space-y-6">
@@ -39,24 +42,34 @@ export default function DashboardPage() {
                 </Dialog>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('wallet.totalBalance')}</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('wallet.netWorth')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {formatVNCurrency(totalBalance)} VND
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {formatVNCurrency(netWorth)} VND
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('wallet.active')}</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('wallet.availableTotal')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {wallets.length}
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            {formatVNCurrency(availableTotal)} VND
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{t('wallet.creditTotal')}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                            {formatVNCurrency(creditTotal)} VND
                         </div>
                     </CardContent>
                 </Card>

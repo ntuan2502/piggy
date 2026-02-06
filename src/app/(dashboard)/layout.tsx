@@ -10,6 +10,8 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { MigrationModal } from "@/components/migration-modal";
+import { WalletInitializer } from "@/components/wallet-initializer";
 import "@/lib/i18n";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -25,6 +27,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     return (
         <ProtectedRoute>
+            <WalletInitializer />
+            <MigrationModal />
             <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
                 {/* Sidebar */}
                 <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
