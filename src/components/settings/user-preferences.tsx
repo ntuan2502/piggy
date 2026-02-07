@@ -18,15 +18,18 @@ export function UserPreferences() {
     const { user } = useAuth();
     const { profile } = useUserProfile();
 
-    // Initialize state with defaults if profile values are missing
-    // Initialize state with defaults if profile values are missing
-    const [recentTransactionsLimit, setRecentTransactionsLimit] = useState(profile?.recentTransactionsLimit || 10);
+    // Local state for pending changes (not applied until Save)
+    const [recentTransactionsLimit, setRecentTransactionsLimit] = useState(10);
+    const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
+    const [selectedTheme, setSelectedTheme] = useState<string>('light');
     const [saving, setSaving] = useState(false);
 
-    // Sync local state when profile loads
+    // Sync local state when profile loads from Firebase
     useEffect(() => {
         if (profile) {
             setRecentTransactionsLimit(profile.recentTransactionsLimit || 10);
+            setSelectedLanguage(profile.language || 'en');
+            setSelectedTheme(profile.theme || 'light');
         }
     }, [profile]);
 
@@ -34,11 +37,21 @@ export function UserPreferences() {
         if (!user) return;
         setSaving(true);
         try {
+            // Save to Firebase first
             await updateUserProfile(user.uid, {
                 recentTransactionsLimit,
-                language: i18n.language as 'en' | 'vi',
-                theme: theme as 'light' | 'dark' | 'system',
+                language: selectedLanguage as 'en' | 'vi',
+                theme: selectedTheme as 'light' | 'dark' | 'system',
             });
+
+            // Apply changes locally after successful save
+            if (i18n.language !== selectedLanguage) {
+                i18n.changeLanguage(selectedLanguage);
+            }
+            if (theme !== selectedTheme) {
+                setTheme(selectedTheme);
+            }
+
             toast.success(t('settings.preferencesSaved'));
         } catch (error: any) {
             console.error("Failed to save preferences:", error);
@@ -46,11 +59,6 @@ export function UserPreferences() {
         } finally {
             setSaving(false);
         }
-    };
-
-    const handleLanguageChange = (lang: string) => {
-        i18n.changeLanguage(lang);
-        localStorage.setItem('language', lang);
     };
 
     return (
@@ -79,7 +87,7 @@ export function UserPreferences() {
                 {/* Language Selection */}
                 <div className="space-y-2">
                     <Label htmlFor="language">{t('settings.language')}</Label>
-                    <Select value={i18n.language} onValueChange={handleLanguageChange}>
+                    <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
                         <SelectTrigger id="language">
                             <SelectValue />
                         </SelectTrigger>
@@ -90,12 +98,10 @@ export function UserPreferences() {
                     </Select>
                 </div>
 
-
-
                 {/* Theme Selection */}
                 <div className="space-y-2">
                     <Label htmlFor="theme">{t('theme.toggle')}</Label>
-                    <Select value={theme} onValueChange={setTheme}>
+                    <Select value={selectedTheme} onValueChange={setSelectedTheme}>
                         <SelectTrigger id="theme">
                             <SelectValue />
                         </SelectTrigger>
@@ -107,12 +113,10 @@ export function UserPreferences() {
                     </Select>
                 </div>
 
-
-
                 <Button onClick={handleSave} disabled={saving}>
                     {saving ? t('common.saving') : t('common.save')}
                 </Button>
             </CardContent>
-        </Card >
+        </Card>
     );
 }
