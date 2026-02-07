@@ -88,7 +88,7 @@ export function UserPreferences() {
                 <div className="space-y-2">
                     <Label htmlFor="language">{t('settings.language')}</Label>
                     <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                        <SelectTrigger id="language">
+                        <SelectTrigger id="language" className="w-full">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -102,7 +102,7 @@ export function UserPreferences() {
                 <div className="space-y-2">
                     <Label htmlFor="theme">{t('theme.toggle')}</Label>
                     <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                        <SelectTrigger id="theme">
+                        <SelectTrigger id="theme" className="w-full">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

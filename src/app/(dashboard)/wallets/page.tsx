@@ -77,7 +77,7 @@ export default function WalletsPage() {
                             {t('wallet.add')}
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-lg">
                         <DialogHeader>
                             <DialogTitle>{editingWallet ? t('wallet.edit') : t('wallet.add')}</DialogTitle>
                             <DialogDescription>

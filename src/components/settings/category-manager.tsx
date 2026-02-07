@@ -340,7 +340,7 @@ export function CategoryManager() {
             </AlertDialog>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
+                <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>{editingCategory ? t('category.edit') : t('category.add')}</DialogTitle>
                     </DialogHeader>
@@ -379,7 +379,7 @@ export function CategoryManager() {
                         <div className="grid gap-2">
                             <Label htmlFor="parent">{t('category.parent')}</Label>
                             <Select value={parentId} onValueChange={setParentId}>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder={t('category.none')} />
                                 </SelectTrigger>
                                 <SelectContent>

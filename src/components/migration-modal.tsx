@@ -69,7 +69,7 @@ export function MigrationModal() {
 
     return (
         <Dialog open={open} onOpenChange={() => { }}>
-            <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+            <DialogContent className="max-w-lg" onInteractOutside={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">

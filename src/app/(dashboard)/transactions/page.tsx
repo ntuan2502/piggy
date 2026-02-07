@@ -235,7 +235,7 @@ export default function TransactionsPage() {
 
                             {/* Type Filter */}
                             <Select value={typeFilter} onValueChange={setTypeFilter}>
-                                <SelectTrigger className="w-[140px]">
+                                <SelectTrigger className="w-full sm:w-[140px]">
                                     <SelectValue placeholder={t('transaction.item')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -249,7 +249,7 @@ export default function TransactionsPage() {
 
                             {/* Wallet Filter */}
                             <Select value={walletFilter} onValueChange={setWalletFilter}>
-                                <SelectTrigger className="w-[160px]">
+                                <SelectTrigger className="w-full sm:w-[160px]">
                                     <SelectValue placeholder={t('wallet.title')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -264,7 +264,7 @@ export default function TransactionsPage() {
 
                             {/* Category Filter */}
                             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger className="w-full sm:w-[180px]">
                                     <SelectValue placeholder={t('category.title')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -387,7 +387,7 @@ export default function TransactionsPage() {
             )}
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>{t('transaction.edit')}</DialogTitle>
                     </DialogHeader>

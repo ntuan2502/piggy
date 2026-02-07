@@ -171,7 +171,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                                 <FormLabel>{t('wallet.type')}</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('wallet.selectType')} />
                                         </SelectTrigger>
                                     </FormControl>
@@ -193,7 +193,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                                 <FormLabel>{t('wallet.currency')}</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('wallet.selectCurrency')} />
                                         </SelectTrigger>
                                     </FormControl>

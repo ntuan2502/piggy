@@ -9,11 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useWallets } from "@/hooks/use-wallets";
@@ -24,6 +22,7 @@ import { TransactionType, Transaction } from "@/types";
 import { formatVNCurrency, parseVNCurrency, formatVNCurrencyInput, formatVNDate } from "@/lib/format";
 import { addTransaction, updateTransaction } from "@/services/transaction.service";
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const transactionSchema = z.object({
     amount: z.number().min(0.01, "Amount must be positive"),
@@ -170,7 +169,7 @@ export function TransactionForm({
                                     disabled={transaction?.isTransfer}
                                 >
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full">
                                             <SelectValue placeholder={t('wallet.select')} />
                                         </SelectTrigger>
                                     </FormControl>
@@ -212,7 +211,7 @@ export function TransactionForm({
                                         disabled={transaction?.isTransfer}
                                     >
                                         <FormControl>
-                                            <SelectTrigger>
+                                            <SelectTrigger className="w-full">
                                                 <SelectValue placeholder={t('category.select')}>
                                                     {selectedCategory && (
                                                         <div className="flex items-center gap-2">
@@ -290,37 +289,13 @@ export function TransactionForm({
                         render={({ field }) => (
                             <FormItem className="flex flex-col">
                                 <FormLabel>{t('common.date')}</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn(
-                                                    "w-full pl-3 text-left font-normal",
-                                                    !field.value && "text-muted-foreground"
-                                                )}
-                                            >
-                                                {field.value ? (
-                                                    formatVNDate(field.value)
-                                                ) : (
-                                                    <span>{t('common.pickDate')}</span>
-                                                )}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                            mode="single"
-                                            selected={field.value}
-                                            onSelect={field.onChange}
-                                            disabled={(date) =>
-                                                date > new Date() || date < new Date("1900-01-01")
-                                            }
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
+                                <FormControl>
+                                    <DatePicker
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        disableFuture={true}
+                                    />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}

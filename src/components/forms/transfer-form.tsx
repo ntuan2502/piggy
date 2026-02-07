@@ -17,12 +17,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { formatVNDate, parseVNCurrency, formatVNCurrencyInput, formatVNCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface TransferFormData {
     fromWalletId: string;
@@ -121,7 +120,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                     value={fromWalletId}
                     onValueChange={(value) => setValue("fromWalletId", value)}
                 >
-                    <SelectTrigger id="fromWallet">
+                    <SelectTrigger id="fromWallet" className="w-full">
                         <SelectValue placeholder={t("wallet.select")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -149,7 +148,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                     value={toWalletId}
                     onValueChange={(value) => setValue("toWalletId", value)}
                 >
-                    <SelectTrigger id="toWallet">
+                    <SelectTrigger id="toWallet" className="w-full">
                         <SelectValue placeholder={t("wallet.select")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -185,28 +184,11 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
             {/* Date */}
             <div className="space-y-2">
                 <Label>{t("common.date")}</Label>
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="outline"
-                            className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !selectedDate && "text-muted-foreground"
-                            )}
-                        >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? formatVNDate(selectedDate) : <span>{t("common.pickDate")}</span>}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                        <Calendar
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={(date) => date && setValue("date", date)}
-                            initialFocus
-                        />
-                    </PopoverContent>
-                </Popover>
+                <DatePicker
+                    value={selectedDate}
+                    onChange={(date) => date && setValue("date", date)}
+                    disableFuture={true}
+                />
             </div>
 
             {/* Note */}

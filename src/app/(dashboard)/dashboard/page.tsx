@@ -35,7 +35,7 @@ export default function DashboardPage() {
                                 <ArrowRightLeft className="mr-2 h-4 w-4" /> {t('transaction.transfer')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
+                        <DialogContent className="max-w-lg">
                             <DialogHeader>
                                 <DialogTitle>{t('transaction.transfer')}</DialogTitle>
                                 <DialogDescription>{t('transaction.transferDescription')}</DialogDescription>
@@ -49,7 +49,7 @@ export default function DashboardPage() {
                                 <Plus className="mr-2 h-4 w-4" /> {t('transaction.add')}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
+                        <DialogContent className="max-w-lg">
                             <DialogHeader>
                                 <DialogTitle>{t('transaction.add')}</DialogTitle>
                                 <DialogDescription>{t('transaction.description')}</DialogDescription>
