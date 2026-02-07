@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { subscribeToCategories, seedCategories } from "@/services/category.service";
+import { subscribeToCategories } from "@/services/category.service";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Category } from "@/types";
 
@@ -22,9 +22,6 @@ export function useCategories() {
             if (mounted) {
                 setCategories(data);
                 setLoading(false);
-                if (data.length === 0) {
-                    seedCategories(user.uid);
-                }
             }
         });
         return () => {

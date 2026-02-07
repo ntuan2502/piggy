@@ -25,90 +25,138 @@ export const subscribeToCategories = (userId: string, callback: (categories: Cat
 };
 
 export const seedCategories = async (userId: string) => {
-    // Fetch existing
+    // Check if categories already exist
     const q = query(collection(db, COLLECTION_NAME), where("userId", "==", userId));
     const snapshot = await getDocs(q);
-    const existingCats = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Category));
+
+    // Only seed if no categories exist
+    if (!snapshot.empty) return;
 
     const batch = writeBatch(db);
-    let opsCount = 0;
+    let order = 0;
 
-    // Helper to find existing parent
-    const findParent = (name: string, type: string) =>
-        existingCats.find(c => c.name === name && c.type === type && !c.parentId);
+    interface SeedChild {
+        name: string;
+        icon: string;
+        color: string;
+        type?: string;
+    }
 
-    // Parent Categories
-    const parents = [
-        { name: "Food & Beverage", type: "expense", icon: "Utensils", color: "#ef4444" },
-        { name: "Shopping", type: "expense", icon: "ShoppingBag", color: "#3b82f6" },
-        { name: "Transportation", type: "expense", icon: "Bus", color: "#f59e0b" },
-        { name: "Income", type: "income", icon: "Wallet", color: "#22c55e" },
+    interface SeedParent {
+        name: string;
+        type: string;
+        icon: string;
+        color: string;
+        children?: SeedChild[];
+    }
+
+    // Default Vietnamese Categories
+    const defaults: SeedParent[] = [
+        // Expense Leaders
+        {
+            name: "Ăn uống", type: "expense", icon: "Utensils", color: "#ef4444", children: [
+                { name: "Nhà hàng", icon: "Utensils", color: "#f87171" },
+                { name: "Cà phê", icon: "Coffee", color: "#fb923c" },
+                { name: "Đi chợ/Siêu thị", icon: "ShoppingBasket", color: "#bef264" },
+            ]
+        },
+        {
+            name: "Mua sắm", type: "expense", icon: "ShoppingBag", color: "#3b82f6", children: [
+                { name: "Quần áo", icon: "Shirt", color: "#60a5fa" },
+                { name: "Điện tử", icon: "Smartphone", color: "#93c5fd" },
+                { name: "Làm đẹp", icon: "Sparkles", color: "#f472b6" },
+            ]
+        },
+        {
+            name: "Di chuyển", type: "expense", icon: "Bus", color: "#f59e0b", children: [
+                { name: "Xăng xe", icon: "Fuel", color: "#fbbf24" },
+                { name: "Bảo dưỡng", icon: "Wrench", color: "#d97706" },
+                { name: "Taxi/Grab", icon: "Car", color: "#fcd34d" },
+            ]
+        },
+        {
+            name: "Nhà cửa", type: "expense", icon: "Home", color: "#10b981", children: [
+                { name: "Tiền điện", icon: "Zap", color: "#34d399" },
+                { name: "Tiền nước", icon: "Droplets", color: "#6ee7b7" },
+                { name: "Internet/TV", icon: "Wifi", color: "#10b981" },
+            ]
+        },
+        {
+            name: "Giải trí", type: "expense", icon: "Gamepad2", color: "#8b5cf6", children: [
+                { name: "Xem phim", icon: "Film", color: "#a78bfa" },
+                { name: "Du lịch", icon: "Plane", color: "#c4b5fd" },
+            ]
+        },
+
+        // Income Leaders
+        {
+            name: "Thu nhập", type: "income", icon: "Wallet", color: "#22c55e", children: [
+                { name: "Lương", icon: "Banknote", color: "#4ade80", type: "income" },
+                { name: "Thưởng", icon: "Gift", color: "#86efac", type: "income" },
+                { name: "Lãi tiết kiệm", icon: "PiggyBank", color: "#16a34a", type: "income" },
+            ]
+        },
     ];
 
-    const parentRefs: Record<string, string> = {}; // Name -> ID
+    for (const parent of defaults) {
+        // Create Parent
+        const parentRef = doc(collection(db, COLLECTION_NAME));
+        batch.set(parentRef, {
+            userId,
+            name: parent.name,
+            type: parent.type,
+            icon: parent.icon,
+            color: parent.color,
+            parentId: null,
+            isDefault: true,
+            order: order++,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        });
 
-    for (const p of parents) {
-        const existing = findParent(p.name, p.type);
-        if (existing) {
-            parentRefs[p.name] = existing.id;
-        } else {
-            const ref = doc(collection(db, COLLECTION_NAME));
-            batch.set(ref, {
-                userId,
-                name: p.name,
-                type: p.type,
-                icon: p.icon,
-                color: p.color,
-                parentId: null,
-                isDefault: true,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-            });
-            parentRefs[p.name] = ref.id;
-            opsCount++;
+        // Create Children
+        if (parent.children) {
+            let childOrder = 0;
+            for (const child of parent.children) {
+                const childRef = doc(collection(db, COLLECTION_NAME));
+                batch.set(childRef, {
+                    userId,
+                    name: child.name,
+                    type: child.type || parent.type, // Inherit type if not set
+                    icon: child.icon,
+                    color: child.color,
+                    parentId: parentRef.id,
+                    isDefault: true,
+                    order: childOrder++,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                });
+            }
         }
     }
 
-    // Child Categories
-    const children = [
-        { name: "Restaurants", parent: "Food & Beverage" },
-        { name: "Coffee", parent: "Food & Beverage" },
-        { name: "Groceries", parent: "Food & Beverage" },
-        { name: "Clothing", parent: "Shopping" },
-        { name: "Electronics", parent: "Shopping" },
-        { name: "Taxi", parent: "Transportation" },
-        { name: "Parking", parent: "Transportation" },
-        { name: "Salary", parent: "Income", type: "income" },
-        { name: "Bonus", parent: "Income", type: "income" },
-    ];
+    await batch.commit();
+};
 
-    for (const c of children) {
-        const parentId = parentRefs[c.parent];
-        if (!parentId) continue; // Should not happen if parents created/found correctly
+export const resetCategories = async (userId: string) => {
+    // 1. Delete all existing categories for this user
+    const q = query(collection(db, COLLECTION_NAME), where("userId", "==", userId));
+    const snapshot = await getDocs(q);
 
-        // Check if child exists under this parent
-        const exists = existingCats.find(e => e.name === c.name && e.parentId === parentId);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
 
-        if (!exists) {
-            const ref = doc(collection(db, COLLECTION_NAME));
-            batch.set(ref, {
-                userId,
-                name: c.name,
-                type: c.type || "expense",
-                icon: "Circle",
-                color: "#9ca3af",
-                parentId: parentId,
-                isDefault: true,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-            });
-            opsCount++;
-        }
-    }
+    await batch.commit();
 
-    if (opsCount > 0) {
-        await batch.commit();
-    }
+    // 2. Re-seed categories
+    // We export seedCategories logic above but slightly modified to force run
+    // Actually we can just call the logic inside seedCategories but bypassing the empty check
+    // Or simpler: clear then call seedCategories, assuming seedCategories checks if empty.
+
+    // Since we just deleted everything, calling seedCategories(userId) works perfectly.
+    await seedCategories(userId);
 };
 
 export const updateCategory = async (id: string, data: Partial<Omit<Category, "id" | "createdAt" | "updatedAt">>) => {
@@ -119,7 +167,24 @@ export const updateCategory = async (id: string, data: Partial<Omit<Category, "i
     });
 };
 
-export const deleteCategory = async (id: string) => {
+export const deleteCategory = async (id: string, userId: string) => {
+    const batch = writeBatch(db);
+
+    // 1. Delete the category itself
     const docRef = doc(db, COLLECTION_NAME, id);
-    await import("firebase/firestore").then(m => m.deleteDoc(docRef));
+    batch.delete(docRef);
+
+    // 2. Find and delete all children
+    // MUST include userId in query to satisfy Firestore security rules
+    const q = query(
+        collection(db, COLLECTION_NAME),
+        where("parentId", "==", id),
+        where("userId", "==", userId)
+    );
+    const snapshot = await getDocs(q);
+    snapshot.forEach((childDoc) => {
+        batch.delete(childDoc.ref);
+    });
+
+    await batch.commit();
 };

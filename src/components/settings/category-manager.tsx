@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useCategories } from "@/hooks/use-categories";
 import { useAuth } from "@/components/providers/auth-provider";
-import { addCategory, updateCategory, deleteCategory } from "@/services/category.service";
+import { addCategory, updateCategory, deleteCategory, resetCategories } from "@/services/category.service";
 import { toast } from "sonner";
 import { Category, TransactionType } from "@/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash2, Plus, GripVertical } from "lucide-react";
+import { Pencil, Trash2, Plus, GripVertical, RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { IconPicker } from "@/components/ui/icon-picker";
@@ -28,6 +28,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
     DndContext,
     closestCenter,
@@ -129,6 +134,7 @@ export function CategoryManager() {
     const [activeTab, setActiveTab] = useState("expense");
 
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
     // Filtered and sorted categories
@@ -211,13 +217,25 @@ export function CategoryManager() {
     const handleDeleteConfirm = async () => {
         if (!categoryToDelete || !user) return;
         try {
-            await deleteCategory(categoryToDelete);
+            await deleteCategory(categoryToDelete, user.uid);
             toast.success(t('category.deleteSuccess'));
             setDeleteConfirmOpen(false);
             setCategoryToDelete(null);
         } catch (error) {
             console.error("Delete failed:", error);
             toast.error(t('category.deleteFailed'));
+        }
+    };
+
+    const handleReset = async () => {
+        if (!user) return;
+        try {
+            await resetCategories(user.uid);
+            toast.success(t('category.resetSuccess'));
+            setResetConfirmOpen(false);
+        } catch (error) {
+            console.error("Reset failed:", error);
+            toast.error(t('common.error'));
         }
     };
 
@@ -247,10 +265,31 @@ export function CategoryManager() {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>{t('category.management')}</CardTitle>
-                    <Button size="sm" onClick={handleAdd}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        {t('category.add')}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-block" tabIndex={0}>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setResetConfirmOpen(true)}
+                                        disabled={categories.length > 0}
+                                        className={categories.length > 0 ? "pointer-events-none opacity-50" : ""}
+                                    >
+                                        <RotateCcw className="w-4 h-4 mr-2" />
+                                        {t('category.reset')}
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{categories.length > 0 ? t('category.resetDisabledHelp') : t('category.reset')}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Button size="sm" onClick={handleAdd}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            {t('category.add')}
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="expense" onValueChange={setActiveTab}>
@@ -339,6 +378,26 @@ export function CategoryManager() {
                 </AlertDialogContent>
             </AlertDialog>
 
+            <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('category.confirmReset')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t('category.resetDescription')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleReset}
+                            className="bg-red-500 hover:bg-red-600"
+                        >
+                            {t('common.confirm')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
@@ -368,7 +427,7 @@ export function CategoryManager() {
 
                         {/* Color */}
                         <div className="grid gap-2">
-                            <Label>{t('wallet.color') || 'Color'}</Label>
+                            <Label>{t('wallet.color')}</Label>
                             <ColorPicker
                                 value={selectedColor}
                                 onChange={setSelectedColor}
