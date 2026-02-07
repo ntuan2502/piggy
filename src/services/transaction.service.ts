@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { Transaction } from "@/types";
-import { collection, query, where, onSnapshot, orderBy, limit, serverTimestamp, runTransaction, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, orderBy, limit, serverTimestamp, runTransaction, doc, getDoc, getDocs } from "firebase/firestore";
 
 const COLLECTION_NAME = "transactions";
 const WALLET_COLLECTION = "wallets";
@@ -405,5 +405,34 @@ export const getTransactionById = async (transactionId: string, userId: string):
     } catch (e) {
         console.error("Get transaction failed: ", e);
         return null;
+    }
+};
+
+export const getUncategorizedTransactions = async (userId: string): Promise<Transaction[]> => {
+    try {
+        // Fetch recent 500 transactions to find uncategorized ones
+        // In a real app with thousands, we'd need a specific index or composite query
+        // But preventing 'missing field' queries is tricky in Firestore without index
+        const q = query(
+            collection(db, COLLECTION_NAME),
+            where("userId", "==", userId),
+            orderBy("date", "desc"),
+            limit(500)
+        );
+
+        const snapshot = await getDocs(q);
+        const transactions = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                date: data.date?.toDate ? data.date.toDate() : new Date(data.date),
+            };
+        }) as Transaction[];
+
+        return transactions.filter(t => !t.categoryId || t.categoryId === "");
+    } catch (e) {
+        console.error("Get uncategorized failed: ", e);
+        return [];
     }
 };

@@ -5,9 +5,9 @@ import { useTransactions } from "@/hooks/use-transactions";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useTranslation } from "react-i18next";
 import { formatVNCurrency, formatVNDate } from "@/lib/format";
-import { deleteTransaction } from "@/services/transaction.service";
+import { deleteTransaction, updateTransaction } from "@/services/transaction.service";
 import { toast } from "sonner";
-import { Pencil, Trash2, Search, Filter, X } from "lucide-react";
+import { Pencil, Trash2, Search, Filter, X, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -46,19 +46,107 @@ import { TransactionForm } from "@/components/forms/transaction-form";
 import { Transaction } from "@/types";
 import { useWallets } from "@/hooks/use-wallets";
 import { useCategories } from "@/hooks/use-categories";
+import { useUserProfile } from "@/hooks/use-user-profile";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { Badge } from "@/components/ui/badge";
 
 export default function TransactionsPage() {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const { transactions, loading } = useTransactions();
+    const { transactions, loading } = useTransactions(1000);
     const { wallets } = useWallets();
     const { categories } = useCategories();
+    const { profile } = useUserProfile();
     const [editingTransaction, setEditingTransaction] = React.useState<Transaction | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
     const [transactionToDelete, setTransactionToDelete] = React.useState<string | null>(null);
+    const [isAutoCategorizing, setIsAutoCategorizing] = React.useState(false);
+
+    // Identify uncategorized transactions (empty ID or ID not found in categories)
+    const uncategorizedTransactions = React.useMemo(() => {
+        const validCategoryIds = new Set(categories.map(c => c.id));
+        return transactions.filter(t =>
+            !t.isTransfer && // Exclude transfers
+            (!t.categoryId || t.categoryId === "" || !validCategoryIds.has(t.categoryId))
+        );
+    }, [transactions, categories]);
+
+    const handleAutoCategorize = async () => {
+        if (uncategorizedTransactions.length === 0) return;
+
+        setIsAutoCategorizing(true);
+        let successCount = 0;
+        const total = uncategorizedTransactions.length;
+        const BATCH_SIZE = 20;
+
+        toast.info(t('transaction.categorizingStarted', { count: total }));
+
+        try {
+            // Chunk transactions into batches
+            const chunks = [];
+            for (let i = 0; i < total; i += BATCH_SIZE) {
+                chunks.push(uncategorizedTransactions.slice(i, i + BATCH_SIZE));
+            }
+
+            for (const chunk of chunks) {
+                // Prepare batch payload
+                const payload = {
+                    transactions: chunk.map(tx => ({
+                        id: tx.id,
+                        note: tx.note || "",
+                        amount: tx.amount,
+                        type: tx.type // Send type to help AI (and for backend prompt)
+                    })),
+                    categories: categories.map(c => ({ id: c.id, name: c.name, type: c.type })),
+                    apiKey: profile?.geminiApiKey
+                };
+
+                // Call AI API
+                const response = await fetch('/api/ai/categorize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.results && Array.isArray(data.results)) {
+
+                        // Process results for this chunk
+                        await Promise.all(data.results.map(async (result: { categoryId?: string; id: string }) => {
+                            if (result.categoryId) {
+                                const cat = categories.find(c => c.id === result.categoryId);
+                                const originalTx = chunk.find(tx => tx.id === result.id);
+
+                                if (cat && originalTx) {
+                                    // DOUBLE CHECK: Ensure the AI suggested category matches the transaction type
+                                    if (cat.type !== originalTx.type) {
+                                        console.warn(`AI mismatch ignored: Tx ${originalTx.type} -> Cat ${cat.type}`);
+                                        return;
+                                    }
+
+                                    await updateTransaction(originalTx.id, user!.uid, {
+                                        ...originalTx,
+                                        categoryId: result.categoryId
+                                        // type: cat.type // User requested to NOT change type
+                                    });
+                                    successCount++;
+                                }
+                            }
+                        }));
+                    }
+                }
+            }
+
+            toast.success(t('transaction.categorizeSuccess', { successCount, count: total }));
+        } catch (error) {
+            console.error("Auto categorize failed:", error);
+            toast.error(t('transaction.categorizeFailed'));
+        } finally {
+            setIsAutoCategorizing(false);
+        }
+    };
 
     // Enhanced filters
     const [searchQuery, setSearchQuery] = React.useState("");
@@ -99,22 +187,22 @@ export default function TransactionsPage() {
 
     const hasActiveFilters = searchQuery || typeFilter !== "all" || walletFilter !== "all" || categoryFilter !== "all";
 
-    const getWallet = React.useCallback((walletId: string) => {
+    const getWallet = React.useCallback((walletId?: string) => {
         return wallets.find(w => w.id === walletId);
     }, [wallets]);
 
-    const getWalletName = React.useCallback((walletId: string) => {
+    const getWalletName = React.useCallback((walletId?: string) => {
         const wallet = getWallet(walletId);
-        return wallet?.name || walletId;
+        return wallet?.name || walletId || "";
     }, [getWallet]);
 
-    const getCategory = React.useCallback((categoryId: string) => {
+    const getCategory = React.useCallback((categoryId?: string) => {
         return categories.find(c => c.id === categoryId);
     }, [categories]);
 
-    const getCategoryName = React.useCallback((categoryId: string) => {
+    const getCategoryName = React.useCallback((categoryId?: string) => {
         const category = getCategory(categoryId);
-        return category?.name || categoryId;
+        return category?.name || categoryId || "";
     }, [getCategory]);
 
     const getTypeColor = (type: string) => {
@@ -202,13 +290,27 @@ export default function TransactionsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold">{t('transaction.allTransactions')}</h1>
                     <p className="text-muted-foreground mt-2">
                         {filteredTransactions.length} / {transactions.length} {t('transaction.item')}
                     </p>
                 </div>
+                {uncategorizedTransactions.length > 0 && (
+                    <Button
+                        onClick={handleAutoCategorize}
+                        disabled={isAutoCategorizing}
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                        {isAutoCategorizing ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                            <Sparkles className="w-4 h-4 mr-2" />
+                        )}
+                        {t('transaction.autoCategorize')} ({uncategorizedTransactions.length})
+                    </Button>
+                )}
             </div>
 
             {/* Search and Filter */}

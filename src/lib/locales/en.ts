@@ -42,6 +42,7 @@ const en = {
     },
     common: {
         actions: "Actions",
+        aiSmartFill: "AI Suggest",
         amount: "Amount",
         appName: "Piggy",
         appTagline: "Finance Manager",
@@ -126,6 +127,8 @@ const en = {
         recentTransactionsLimitHelp: "Number of transactions to show on dashboard (5-50)",
         resetCategories: "Reset Default Categories (Money Lover style)",
         title: "Settings",
+        apiKeyHelp: "Required for AI features. Get one at aistudio.google.com",
+        geminiApiKey: "Gemini API Key",
         userPreferences: "User Preferences",
         userPreferencesDescription: "Customize your app experience"
     },
@@ -140,6 +143,10 @@ const en = {
         add: "Add Transaction",
         all: "All",
         allTransactions: "All Transactions",
+        autoCategorize: "Auto Categorize",
+        categorizeFailed: "Failed to auto-categorize",
+        categorizeSuccess: "Auto-categorized {{successCount}}/{{count}} transactions!",
+        categorizingStarted: "Categorizing {{count}} transactions...",
         confirmDelete: "Are you sure you want to delete this transaction? This will adjust your wallet balance.",
         debt: "Debt",
         delete: "Delete Transaction",

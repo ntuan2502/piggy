@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft, Sparkles, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useWallets } from "@/hooks/use-wallets";
@@ -26,7 +26,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 const transactionSchema = z.object({
     amount: z.number().min(0.01, "Amount must be positive"),
     walletId: z.string().min(1, "Wallet is required"),
-    categoryId: z.string().min(1, "Category is required"),
+    categoryId: z.string().optional(),
     date: z.date(),
     note: z.string().optional(),
     tags: z.string().optional(), // We'll input as string and split
@@ -48,11 +48,14 @@ export function TransactionForm({
     const { profile } = useUserProfile();
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<string>(transaction?.type || "expense");
+    const [isAiLoading, setIsAiLoading] = useState(false);
 
 
 
     // Find category type helper
-    const getCategoryType = (catId: string): TransactionType => {
+    // Find category type helper
+    const getCategoryType = (catId?: string): TransactionType => {
+        if (!catId) return 'expense';
         const cat = categories.find(c => c.id === catId);
         // Ensure the type from category matches TransactionType, default to expense
         return (cat?.type as TransactionType) || 'expense';
@@ -105,6 +108,45 @@ export function TransactionForm({
             });
         }
     }, [transaction, form]);
+
+    const handleAiSuggest = async () => {
+        const note = form.getValues("note");
+        const amount = form.getValues("amount");
+
+        if (!note && !amount) return;
+
+        setIsAiLoading(true);
+        try {
+            const response = await fetch('/api/ai/categorize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    note,
+                    amount,
+                    // ONLY send categories that match the current mode (Income/Expense)
+                    // This forces AI to pick a valid category for the selected type
+                    categories: categories
+                        .filter(c => c.type === activeTab)
+                        .map(c => ({ id: c.id, name: c.name, type: c.type })),
+                    apiKey: profile?.geminiApiKey
+                })
+            });
+
+            const data = await response.json();
+            if (data.categoryId) {
+                // Check if category exists
+                const cat = categories.find(c => c.id === data.categoryId);
+                if (cat) {
+                    // setActiveTab(cat.type); // User requested to NOT change type
+                    form.setValue("categoryId", data.categoryId);
+                }
+            }
+        } catch (error) {
+            console.error("AI Suggestion Failed", error);
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
 
     const onSubmit = async (values: z.infer<typeof transactionSchema>) => {
         if (!user) return;
@@ -344,6 +386,23 @@ export function TransactionForm({
                             </FormItem>
                         )}
                     />
+
+                    {/* AI Smart Fill Trigger - Hide for transfers */}
+                    {!transaction?.isTransfer && (
+                        <div className="flex justify-end -mt-2">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleAiSuggest}
+                                disabled={isAiLoading}
+                                className="text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950"
+                            >
+                                {isAiLoading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                                {t('common.aiSmartFill')}
+                            </Button>
+                        </div>
+                    )}
 
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     <Button type="submit" className="w-full">

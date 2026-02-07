@@ -35,7 +35,7 @@ export interface Transaction {
     id: string;
     userId: string;
     walletId: string;
-    categoryId: string;
+    categoryId?: string;
     amount: number;
     date: Date; // Transformed date
     note?: string;
@@ -57,6 +57,7 @@ export interface UserProfile {
     recentTransactionsLimit?: number; // Default: 10
     language?: 'en' | 'vi';          // Default: 'en'
     theme?: 'light' | 'dark' | 'system'; // Default: 'light'
+    geminiApiKey?: string;
     createdAt?: Date | Timestamp;
     updatedAt?: Date | Timestamp;
 }

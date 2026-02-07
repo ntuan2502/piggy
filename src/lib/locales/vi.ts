@@ -42,6 +42,7 @@ const vi = {
     },
     common: {
         actions: "Thao tác",
+        aiSmartFill: "Gợi ý AI",
         amount: "Số tiền",
         appName: "Piggy",
         appTagline: "Quản lý tài chính",
@@ -126,6 +127,8 @@ const vi = {
         recentTransactionsLimitHelp: "Số lượng giao dịch hiển thị trên dashboard (5-50)",
         resetCategories: "Khôi phục danh mục mẫu (Kiểu Money Lover)",
         title: "Cài đặt",
+        apiKeyHelp: "Cần thiết cho tính năng AI. Lấy key tại aistudio.google.com",
+        geminiApiKey: "Gemini API Key",
         userPreferences: "Tùy chọn cá nhân",
         userPreferencesDescription: "Tùy chỉnh trải nghiệm ứng dụng"
     },
@@ -140,6 +143,10 @@ const vi = {
         add: "Thêm giao dịch",
         all: "Tất cả",
         allTransactions: "Tất cả giao dịch",
+        autoCategorize: "Tự động phân loại",
+        categorizeFailed: "Tự động phân loại thất bại",
+        categorizeSuccess: "Đã phân loại tự động {{successCount}}/{{count}} giao dịch!",
+        categorizingStarted: "Đang phân loại {{count}} giao dịch...",
         confirmDelete: "Bạn có chắc muốn xóa giao dịch này? Số dư ví sẽ được điều chỉnh.",
         debt: "Đi vay",
         delete: "Xóa giao dịch",

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export function UserPreferences() {
     const { t, i18n } = useTranslation();
@@ -22,6 +23,8 @@ export function UserPreferences() {
     const [recentTransactionsLimit, setRecentTransactionsLimit] = useState(10);
     const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
     const [selectedTheme, setSelectedTheme] = useState<string>('light');
+    const [geminiApiKey, setGeminiApiKey] = useState<string>('');
+    const [showApiKey, setShowApiKey] = useState(false);
     const [saving, setSaving] = useState(false);
 
     // Sync local state when profile loads from Firebase
@@ -30,6 +33,7 @@ export function UserPreferences() {
             setRecentTransactionsLimit(profile.recentTransactionsLimit || 10);
             setSelectedLanguage(profile.language || 'en');
             setSelectedTheme(profile.theme || 'light');
+            setGeminiApiKey(profile.geminiApiKey || '');
         }
     }, [profile]);
 
@@ -42,6 +46,7 @@ export function UserPreferences() {
                 recentTransactionsLimit,
                 language: selectedLanguage as 'en' | 'vi',
                 theme: selectedTheme as 'light' | 'dark' | 'system',
+                geminiApiKey: geminiApiKey.trim(),
             });
 
             // Apply changes locally after successful save
@@ -112,6 +117,37 @@ export function UserPreferences() {
                             <SelectItem value="system">{t('theme.system')}</SelectItem>
                         </SelectContent>
                     </Select>
+                </div>
+
+                {/* AI API Key */}
+                <div className="space-y-2">
+                    <Label htmlFor="apiKey">{t('settings.geminiApiKey')}</Label>
+                    <div className="relative">
+                        <Input
+                            id="apiKey"
+                            type={showApiKey ? "text" : "password"}
+                            placeholder="AIzaSy..."
+                            value={geminiApiKey}
+                            onChange={(e) => setGeminiApiKey(e.target.value)}
+                            className="pr-10"
+                        />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowApiKey(!showApiKey)}
+                        >
+                            {showApiKey ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        {t('settings.apiKeyHelp')}
+                    </p>
                 </div>
 
                 <Button onClick={handleSave} disabled={saving}>
