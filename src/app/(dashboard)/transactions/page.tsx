@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { formatVNCurrency, formatVNDate } from "@/lib/format";
 import { deleteTransaction } from "@/services/transaction.service";
 import { toast } from "sonner";
-import { Pencil, Trash2, Search, Filter } from "lucide-react";
+import { Pencil, Trash2, Search, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -46,6 +46,8 @@ import { TransactionForm } from "@/components/forms/transaction-form";
 import { Transaction } from "@/types";
 import { useWallets } from "@/hooks/use-wallets";
 import { useCategories } from "@/hooks/use-categories";
+import { CategoryIcon } from "@/components/ui/category-icon";
+import { Badge } from "@/components/ui/badge";
 
 export default function TransactionsPage() {
     const { t } = useTranslation();
@@ -57,8 +59,12 @@ export default function TransactionsPage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
     const [transactionToDelete, setTransactionToDelete] = React.useState<string | null>(null);
+
+    // Enhanced filters
     const [searchQuery, setSearchQuery] = React.useState("");
     const [typeFilter, setTypeFilter] = React.useState<string>("all");
+    const [walletFilter, setWalletFilter] = React.useState<string>("all");
+    const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
 
     const handleEdit = (transaction: Transaction) => {
         setEditingTransaction(transaction);
@@ -84,15 +90,32 @@ export default function TransactionsPage() {
         }
     };
 
-    const getWalletName = React.useCallback((walletId: string) => {
-        const wallet = wallets.find(w => w.id === walletId);
-        return wallet?.name || walletId;
+    const clearFilters = () => {
+        setSearchQuery("");
+        setTypeFilter("all");
+        setWalletFilter("all");
+        setCategoryFilter("all");
+    };
+
+    const hasActiveFilters = searchQuery || typeFilter !== "all" || walletFilter !== "all" || categoryFilter !== "all";
+
+    const getWallet = React.useCallback((walletId: string) => {
+        return wallets.find(w => w.id === walletId);
     }, [wallets]);
 
-    const getCategoryName = React.useCallback((categoryId: string) => {
-        const category = categories.find(c => c.id === categoryId);
-        return category?.name || categoryId;
+    const getWalletName = React.useCallback((walletId: string) => {
+        const wallet = getWallet(walletId);
+        return wallet?.name || walletId;
+    }, [getWallet]);
+
+    const getCategory = React.useCallback((categoryId: string) => {
+        return categories.find(c => c.id === categoryId);
     }, [categories]);
+
+    const getCategoryName = React.useCallback((categoryId: string) => {
+        const category = getCategory(categoryId);
+        return category?.name || categoryId;
+    }, [getCategory]);
 
     const getTypeColor = (type: string) => {
         switch (type) {
@@ -107,12 +130,48 @@ export default function TransactionsPage() {
         }
     };
 
+    const getTypeBadgeVariant = (type: string): "default" | "secondary" | "destructive" | "outline" => {
+        switch (type) {
+            case 'income':
+            case 'debt':
+                return 'default';
+            case 'expense':
+            case 'loan':
+                return 'destructive';
+            default:
+                return 'secondary';
+        }
+    };
+
+    // Get root categories for filter dropdown (sorted by order)
+    const rootCategories = React.useMemo(() => {
+        return categories
+            .filter(c => !c.parentId)
+            .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    }, [categories]);
+
     // Filter and search logic
     const filteredTransactions = React.useMemo(() => {
         return transactions.filter(transaction => {
             // Type filter
             if (typeFilter !== "all" && transaction.type !== typeFilter) {
                 return false;
+            }
+
+            // Wallet filter
+            if (walletFilter !== "all" && transaction.walletId !== walletFilter) {
+                return false;
+            }
+
+            // Category filter (including children of selected parent)
+            if (categoryFilter !== "all") {
+                const category = getCategory(transaction.categoryId);
+                if (!category) return false;
+
+                // Check if it's the selected category or a child of it
+                if (category.id !== categoryFilter && category.parentId !== categoryFilter) {
+                    return false;
+                }
             }
 
             // Search filter
@@ -122,18 +181,20 @@ export default function TransactionsPage() {
                 const walletName = getWalletName(transaction.walletId).toLowerCase();
                 const note = (transaction.note || "").toLowerCase();
                 const amount = transaction.amount.toString();
+                const tags = (transaction.tags || []).join(" ").toLowerCase();
 
                 return (
                     categoryName.includes(query) ||
                     walletName.includes(query) ||
                     note.includes(query) ||
-                    amount.includes(query)
+                    amount.includes(query) ||
+                    tags.includes(query)
                 );
             }
 
             return true;
         });
-    }, [transactions, typeFilter, searchQuery, getCategoryName, getWalletName]);
+    }, [transactions, typeFilter, walletFilter, categoryFilter, searchQuery, getCategoryName, getWalletName, getCategory]);
 
     if (loading) {
         return <div>{t('common.loading')}</div>;
@@ -152,9 +213,10 @@ export default function TransactionsPage() {
 
             {/* Search and Filter */}
             <Card>
-                <CardHeader>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative flex-1">
+                <CardHeader className="pb-4">
+                    <div className="flex flex-col gap-4">
+                        {/* Search */}
+                        <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder={t('transaction.searchPlaceholder')}
@@ -163,11 +225,18 @@ export default function TransactionsPage() {
                                 className="pl-10"
                             />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-muted-foreground" />
+
+                        {/* Filters Row */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                <Filter className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">{t('transaction.filter')}:</span>
+                            </div>
+
+                            {/* Type Filter */}
                             <Select value={typeFilter} onValueChange={setTypeFilter}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder={t('transaction.filter')} />
+                                <SelectTrigger className="w-[140px]">
+                                    <SelectValue placeholder={t('transaction.item')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">{t('transaction.all')}</SelectItem>
@@ -177,6 +246,52 @@ export default function TransactionsPage() {
                                     <SelectItem value="loan">{t('transaction.loan')}</SelectItem>
                                 </SelectContent>
                             </Select>
+
+                            {/* Wallet Filter */}
+                            <Select value={walletFilter} onValueChange={setWalletFilter}>
+                                <SelectTrigger className="w-[160px]">
+                                    <SelectValue placeholder={t('wallet.title')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('transaction.all')} {t('wallet.title')}</SelectItem>
+                                    {wallets.map(wallet => (
+                                        <SelectItem key={wallet.id} value={wallet.id}>
+                                            {wallet.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Category Filter */}
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder={t('category.title')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('transaction.all')} {t('category.title')}</SelectItem>
+                                    {rootCategories.map(cat => (
+                                        <SelectItem key={cat.id} value={cat.id}>
+                                            <div className="flex items-center gap-2">
+                                                <CategoryIcon iconName={cat.icon} color={cat.color} />
+                                                <span>{cat.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Clear Filters */}
+                            {hasActiveFilters && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearFilters}
+                                    className="text-muted-foreground"
+                                >
+                                    <X className="h-4 w-4 mr-1" />
+                                    {t('common.cancel')}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardHeader>
@@ -186,7 +301,7 @@ export default function TransactionsPage() {
             {filteredTransactions.length === 0 ? (
                 <Card>
                     <CardContent className="text-center py-12 text-muted-foreground">
-                        {searchQuery || typeFilter !== "all"
+                        {hasActiveFilters
                             ? t('transaction.noTransactions')
                             : t('transaction.noRecent')}
                     </CardContent>
@@ -201,51 +316,70 @@ export default function TransactionsPage() {
                                     <TableHead>{t('category.title')}</TableHead>
                                     <TableHead>{t('wallet.title')}</TableHead>
                                     <TableHead>{t('common.note')}</TableHead>
-                                    <TableHead className="w-[120px]">{t('transaction.item')}</TableHead>
+                                    <TableHead className="w-[100px]">{t('transaction.item')}</TableHead>
                                     <TableHead className="text-right w-[150px]">{t('common.amount')}</TableHead>
                                     <TableHead className="text-right w-[100px] pr-6">{t('common.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredTransactions.map((transaction) => (
-                                    <TableRow key={transaction.id} className="hover:bg-muted/50">
-                                        <TableCell className="font-medium whitespace-nowrap pl-6">{formatVNDate(transaction.date)}</TableCell>
-                                        <TableCell>{getCategoryName(transaction.categoryId)}</TableCell>
-                                        <TableCell className="text-muted-foreground">{getWalletName(transaction.walletId)}</TableCell>
-                                        <TableCell className="max-w-[200px] truncate" title={transaction.note}>
-                                            {transaction.note || "-"}
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${getTypeColor(transaction.type)}`}>
-                                                {t(`transaction.${transaction.type}`)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className={`text-right font-semibold whitespace-nowrap ${getTypeColor(transaction.type)}`}>
-                                            {transaction.type === 'income' || transaction.type === 'debt' ? '+' : '-'}
-                                            {formatVNCurrency(transaction.amount)}
-                                        </TableCell>
-                                        <TableCell className="text-right pr-6">
-                                            <div className="flex justify-end gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8"
-                                                    onClick={() => handleEdit(transaction)}
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                                    onClick={() => handleDeleteClick(transaction.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {filteredTransactions.map((transaction) => {
+                                    const category = getCategory(transaction.categoryId);
+                                    const wallet = getWallet(transaction.walletId);
+
+                                    return (
+                                        <TableRow key={transaction.id} className="hover:bg-muted/50">
+                                            <TableCell className="font-medium whitespace-nowrap pl-6">
+                                                {formatVNDate(transaction.date)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    {category && (
+                                                        <CategoryIcon
+                                                            iconName={category.icon}
+                                                            color={category.color}
+                                                        />
+                                                    )}
+                                                    <span>{category?.name || transaction.categoryId}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {wallet?.name || transaction.walletId}
+                                            </TableCell>
+                                            <TableCell className="max-w-[200px] truncate" title={transaction.note}>
+                                                {transaction.note || "-"}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={getTypeBadgeVariant(transaction.type)}>
+                                                    {t(`transaction.${transaction.type}`)}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className={`text-right font-semibold whitespace-nowrap ${getTypeColor(transaction.type)}`}>
+                                                {transaction.type === 'income' || transaction.type === 'debt' ? '+' : '-'}
+                                                {formatVNCurrency(transaction.amount)}
+                                            </TableCell>
+                                            <TableCell className="text-right pr-6">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={() => handleEdit(transaction)}
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                                        onClick={() => handleDeleteClick(transaction.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </CardContent>

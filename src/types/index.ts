@@ -23,8 +23,9 @@ export interface Category {
     name: string;
     type: TransactionType;
     icon?: string;
-    parentId?: string;
+    parentId?: string | null;
     color?: string;
+    order?: number;
     isDefault?: boolean;
     createdAt?: Date | Timestamp;
     updatedAt?: Date | Timestamp;

@@ -57,6 +57,7 @@ const en = {
         pickDate: "Pick a date",
         save: "Save",
         saving: "Saving...",
+        search: "Search...",
         settings: "Settings",
         tags: "Tags",
         toggleSidebar: "Toggle Sidebar",

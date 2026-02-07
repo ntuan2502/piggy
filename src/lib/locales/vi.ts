@@ -57,6 +57,7 @@ const vi = {
         pickDate: "Chọn ngày",
         save: "Lưu",
         saving: "Đang lưu...",
+        search: "Tìm kiếm...",
         settings: "Cài đặt",
         tags: "Thẻ (Tags)",
         toggleSidebar: "Ẩn/Hiện thanh bên",

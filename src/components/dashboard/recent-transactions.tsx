@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatVNCurrency, formatVNDate } from "@/lib/format";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 export function RecentTransactions() {
     const { t } = useTranslation();
@@ -18,9 +19,14 @@ export function RecentTransactions() {
 
     if (loading) return <div>{t('common.loading')}</div>;
 
+    // Helper to get category
+    const getCategory = (categoryId: string) => {
+        return categories.find(c => c.id === categoryId);
+    };
+
     // Helper to get category name
     const getCategoryName = (categoryId: string) => {
-        const category = categories.find(c => c.id === categoryId);
+        const category = getCategory(categoryId);
         return category?.name || t('category.unknown');
     };
 
@@ -46,18 +52,31 @@ export function RecentTransactions() {
                     {transactions.map((transaction) => {
                         const isIncome = transaction.type === 'income' || transaction.type === 'loan';
                         const currency = getWalletCurrency(transaction.walletId);
+                        const category = getCategory(transaction.categoryId);
 
                         return (
                             <div key={transaction.id} className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                                {/* Icon */}
-                                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${transaction.isTransfer
-                                    ? 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'
-                                    : isIncome
-                                        ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
-                                        : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
-                                    }`}>
+                                {/* Icon - Use category icon or fallback */}
+                                <div
+                                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${transaction.isTransfer
+                                            ? 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'
+                                            : isIncome
+                                                ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                                                : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
+                                        }`}
+                                    style={category?.color ? {
+                                        backgroundColor: category.color + '15',
+                                        borderColor: category.color + '40'
+                                    } : undefined}
+                                >
                                     {transaction.isTransfer ? (
                                         <ArrowRightLeft className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    ) : category?.icon ? (
+                                        <CategoryIcon
+                                            iconName={category.icon}
+                                            color={category.color || (isIncome ? '#22c55e' : '#ef4444')}
+                                            className="h-5 w-5"
+                                        />
                                     ) : isIncome ? (
                                         <ArrowDownLeft className="h-5 w-5 text-green-600 dark:text-green-400" />
                                     ) : (

@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
 
     const navItems = [
-        { href: "/", icon: LayoutDashboard, label: t('common.dashboard') },
+        { href: "/dashboard", icon: LayoutDashboard, label: t('common.dashboard') },
         { href: "/wallets", icon: Wallet, label: t('wallet.title') },
         { href: "/transactions", icon: Receipt, label: t('transaction.allTransactions') },
         { href: "/reports", icon: PieChart, label: t('report.title') },

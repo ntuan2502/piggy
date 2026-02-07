@@ -23,6 +23,7 @@ import { useState, useEffect } from "react";
 import { TransactionType, Transaction } from "@/types";
 import { formatVNCurrency, parseVNCurrency, formatVNCurrencyInput, formatVNDate } from "@/lib/format";
 import { addTransaction, updateTransaction } from "@/services/transaction.service";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 const transactionSchema = z.object({
     amount: z.number().min(0.01, "Amount must be positive"),
@@ -188,10 +189,18 @@ export function TransactionForm({
                         control={form.control}
                         name="categoryId"
                         render={({ field }) => {
-                            // Filter categories by activeTab
-                            const filteredCategories = categories.filter(c => c.type === activeTab);
+                            // Filter categories by activeTab and sort by order
+                            const filteredCategories = categories
+                                .filter(c => c.type === activeTab)
+                                .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
                             const rootCategories = filteredCategories.filter(c => !c.parentId);
-                            const getChildren = (parentId: string) => filteredCategories.filter(c => c.parentId === parentId);
+                            const getChildren = (parentId: string) =>
+                                filteredCategories
+                                    .filter(c => c.parentId === parentId)
+                                    .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+
+                            // Find selected category for display
+                            const selectedCategory = categories.find(c => c.id === field.value);
 
                             return (
                                 <FormItem>
@@ -204,7 +213,14 @@ export function TransactionForm({
                                     >
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder={t('category.select')} />
+                                                <SelectValue placeholder={t('category.select')}>
+                                                    {selectedCategory && (
+                                                        <div className="flex items-center gap-2">
+                                                            <CategoryIcon iconName={selectedCategory.icon} color={selectedCategory.color} />
+                                                            <span>{selectedCategory.name}</span>
+                                                        </div>
+                                                    )}
+                                                </SelectValue>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -215,11 +231,17 @@ export function TransactionForm({
                                                     {rootCategories.map(root => (
                                                         <div key={root.id}>
                                                             <SelectItem value={root.id} className="font-semibold">
-                                                                {root.name}
+                                                                <div className="flex items-center gap-2">
+                                                                    <CategoryIcon iconName={root.icon} color={root.color} />
+                                                                    <span>{root.name}</span>
+                                                                </div>
                                                             </SelectItem>
                                                             {getChildren(root.id).map(child => (
-                                                                <SelectItem key={child.id} value={child.id} className="pl-4 text-muted-foreground">
-                                                                    ↳ {child.name}
+                                                                <SelectItem key={child.id} value={child.id} className="pl-6">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <CategoryIcon iconName={child.icon} color={child.color} />
+                                                                        <span className="text-muted-foreground">{child.name}</span>
+                                                                    </div>
                                                                 </SelectItem>
                                                             ))}
                                                         </div>
