@@ -12,15 +12,18 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState } from "react";
 import Link from "next/link";
-
-const loginSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
-});
+import { useTranslation } from "react-i18next";
+import "@/lib/i18n";
 
 export default function LoginPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+
+    const loginSchema = z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+    });
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -39,7 +42,7 @@ export default function LoginPage() {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
-                setError("An unknown error occurred");
+                setError(t('auth.unknownError'));
             }
         }
     };
@@ -53,7 +56,7 @@ export default function LoginPage() {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
-                setError("An unknown error occurred");
+                setError(t('auth.unknownError'));
             }
         }
     };
@@ -62,7 +65,7 @@ export default function LoginPage() {
         <div className="flex h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
             <Card className="w-[350px]">
                 <CardHeader>
-                    <CardTitle className="text-2xl text-center">Login to Piggy</CardTitle>
+                    <CardTitle className="text-2xl text-center">{t('auth.loginTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -72,9 +75,9 @@ export default function LoginPage() {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel>{t('auth.emailLabel')}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="email@example.com" {...field} />
+                                            <Input placeholder={t('auth.emailPlaceholder')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -85,9 +88,9 @@ export default function LoginPage() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel>{t('auth.passwordLabel')}</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="******" {...field} />
+                                            <Input type="password" placeholder={t('auth.passwordPlaceholder')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -95,17 +98,17 @@ export default function LoginPage() {
                             />
                             {error && <p className="text-red-500 text-sm">{error}</p>}
                             <Button type="submit" className="w-full">
-                                Login
+                                {t('auth.loginButton')}
                             </Button>
                         </form>
                     </Form>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
                     <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
-                        Login with Google
+                        {t('auth.googleButton')}
                     </Button>
                     <p className="text-sm text-center mt-2">
-                        Don&apos;t have an account? <Link href="/register" className="text-blue-500 hover:underline">Register</Link>
+                        {t('auth.registerPrompt')} <Link href="/register" className="text-blue-500 hover:underline">{t('auth.registerPromptLink')}</Link>
                     </p>
                 </CardFooter>
             </Card>

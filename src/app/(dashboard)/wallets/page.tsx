@@ -51,10 +51,10 @@ export default function WalletsPage() {
         if (!user) return;
         try {
             await updateUserProfile(user.uid, { defaultWalletId: walletId });
-            toast.success(t('Default wallet updated'));
+            toast.success(t('wallet.defaultUpdated'));
         } catch (error: unknown) {
             console.error(error);
-            toast.error(t('Failed to update default wallet'));
+            toast.error(t('wallet.defaultUpdateFailed'));
         }
     };
 
@@ -198,7 +198,7 @@ export default function WalletsPage() {
                 ) : (
                     <Card className="border-dashed">
                         <CardContent className="flex items-center justify-center py-8 text-muted-foreground">
-                            {t('wallet.noCreditAccounts') || 'No credit accounts yet'}
+                            {t('wallet.noCreditAccounts')}
                         </CardContent>
                     </Card>
                 )}

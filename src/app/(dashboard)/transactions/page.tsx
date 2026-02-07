@@ -80,7 +80,7 @@ export default function TransactionsPage() {
             setTransactionToDelete(null);
         } catch (error) {
             console.error("Delete failed:", error);
-            toast.error("Failed to delete transaction");
+            toast.error(t('transaction.deleteFailed'));
         }
     };
 
@@ -187,8 +187,8 @@ export default function TransactionsPage() {
                 <Card>
                     <CardContent className="text-center py-12 text-muted-foreground">
                         {searchQuery || typeFilter !== "all"
-                            ? "Không tìm thấy giao dịch phù hợp"
-                            : t('transaction.noTransactions')}
+                            ? t('transaction.noTransactions')
+                            : t('transaction.noRecent')}
                     </CardContent>
                 </Card>
             ) : (

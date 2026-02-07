@@ -91,12 +91,12 @@ export function CategoryManager() {
 
         try {
             await deleteCategory(categoryToDelete);
-            toast.success(t('category.deleteSuccess') || 'Category deleted');
+            toast.success(t('category.deleteSuccess'));
             setDeleteConfirmOpen(false);
             setCategoryToDelete(null);
         } catch (error) {
             console.error("Delete failed:", error);
-            toast.error("Failed to delete category");
+            toast.error(t('category.deleteFailed'));
         }
     };
 
@@ -165,7 +165,7 @@ export function CategoryManager() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>{t('category.confirmDelete')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone.
+                            {t('validation.confirmDeleteAction')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

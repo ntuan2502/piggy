@@ -68,8 +68,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                             <span className="text-lg font-bold">P</span>
                                         </div>
                                         <div className="flex flex-col gap-0.5 leading-none">
-                                            <span className="font-semibold">Piggy</span>
-                                            <span className="text-xs text-muted-foreground">Finance Manager</span>
+                                            <span className="font-semibold">{t('common.appName')}</span>
+                                            <span className="text-xs text-muted-foreground">{t('common.appTagline')}</span>
                                         </div>
                                     </Link>
                                 </SidebarMenuButton>
@@ -115,7 +115,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col gap-0.5 leading-none">
-                                                <span className="font-semibold text-sm">{user?.displayName || 'User'}</span>
+                                                <span className="font-semibold text-sm">{user?.displayName || t('common.user')}</span>
                                                 <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
                                             </div>
                                             <ChevronUp className="ml-auto" />

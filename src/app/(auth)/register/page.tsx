@@ -12,19 +12,22 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState } from "react";
 import Link from "next/link";
-
-const registerSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
-    confirmPassword: z.string().min(6),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-});
+import { useTranslation } from "react-i18next";
+import "@/lib/i18n";
 
 export default function RegisterPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+
+    const registerSchema = z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+        confirmPassword: z.string().min(6),
+    }).refine((data) => data.password === data.confirmPassword, {
+        message: t('auth.passwordMismatch'),
+        path: ["confirmPassword"],
+    });
 
     const form = useForm<z.infer<typeof registerSchema>>({
         resolver: zodResolver(registerSchema),
@@ -44,7 +47,7 @@ export default function RegisterPage() {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
-                setError("An unknown error occurred");
+                setError(t('auth.unknownError'));
             }
         }
     };
@@ -58,7 +61,7 @@ export default function RegisterPage() {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
-                setError("An unknown error occurred");
+                setError(t('auth.unknownError'));
             }
         }
     };
@@ -67,7 +70,7 @@ export default function RegisterPage() {
         <div className="flex h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
             <Card className="w-[350px]">
                 <CardHeader>
-                    <CardTitle className="text-2xl text-center">Register for Piggy</CardTitle>
+                    <CardTitle className="text-2xl text-center">{t('auth.registerTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -77,9 +80,9 @@ export default function RegisterPage() {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel>{t('auth.emailLabel')}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="email@example.com" {...field} />
+                                            <Input placeholder={t('auth.emailPlaceholder')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -90,9 +93,9 @@ export default function RegisterPage() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel>{t('auth.passwordLabel')}</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="******" {...field} />
+                                            <Input type="password" placeholder={t('auth.passwordPlaceholder')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -103,9 +106,9 @@ export default function RegisterPage() {
                                 name="confirmPassword"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Confirm Password</FormLabel>
+                                        <FormLabel>{t('auth.confirmPasswordLabel')}</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="******" {...field} />
+                                            <Input type="password" placeholder={t('auth.passwordPlaceholder')} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -113,17 +116,17 @@ export default function RegisterPage() {
                             />
                             {error && <p className="text-red-500 text-sm">{error}</p>}
                             <Button type="submit" className="w-full">
-                                Register
+                                {t('auth.registerButton')}
                             </Button>
                         </form>
                     </Form>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
                     <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
-                        Sign up with Google
+                        {t('auth.googleSignUpButton')}
                     </Button>
                     <p className="text-sm text-center mt-2">
-                        Already have an account? <Link href="/login" className="text-blue-500 hover:underline">Login</Link>
+                        {t('auth.loginPrompt')} <Link href="/login" className="text-blue-500 hover:underline">{t('auth.loginPromptLink')}</Link>
                     </p>
                 </CardFooter>
             </Card>

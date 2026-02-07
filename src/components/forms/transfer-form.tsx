@@ -81,13 +81,13 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
         if (!user) return;
 
         if (data.fromWalletId === data.toWalletId) {
-            toast.error("Cannot transfer to the same wallet");
+            toast.error(t('validation.sameWalletTransfer'));
             return;
         }
 
         const amount = parseVNCurrency(data.amount);
         if (amount <= 0) {
-            toast.error("Amount must be greater than 0");
+            toast.error(t('validation.amountGreaterThanZero'));
             return;
         }
 
@@ -106,7 +106,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
             onSuccess?.();
         } catch (error) {
             console.error("Transfer failed:", error);
-            toast.error("Transfer failed");
+            toast.error(t('validation.transferFailed'));
         } finally {
             setIsSubmitting(false);
         }
@@ -170,7 +170,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                 <Label htmlFor="amount">{t("common.amount")}</Label>
                 <Input
                     id="amount"
-                    {...register("amount", { required: "Amount is required" })}
+                    {...register("amount", { required: t('validation.amountRequired') })}
                     placeholder="0"
                     onChange={(e) => {
                         const formatted = formatVNCurrencyInput(e.target.value);

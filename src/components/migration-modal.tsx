@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useWallets } from "@/hooks/use-wallets";
 import { db } from "@/lib/firebase";
@@ -18,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export function MigrationModal() {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const { wallets, loading } = useWallets();
     const [open, setOpen] = useState(false);
@@ -52,12 +54,12 @@ export function MigrationModal() {
                 }
             }
 
-            toast.success(`Đã cập nhật ${updated} ví thành công!`);
+            toast.success(t('migration.success'));
             setOpen(false);
             setNeedsMigration(false);
         } catch (error) {
             console.error("Migration failed:", error);
-            toast.error("Migration thất bại. Vui lòng thử lại.");
+            toast.error(t('migration.error'));
         } finally {
             setIsMigrating(false);
         }
@@ -73,30 +75,14 @@ export function MigrationModal() {
                         <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
                             <AlertTriangle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <DialogTitle className="text-xl">Cập nhật quan trọng!</DialogTitle>
+                        <DialogTitle className="text-xl">{t('migration.title')}</DialogTitle>
                     </div>
                     <DialogDescription className="pt-4 space-y-3 text-base">
-                        <p>
-                            Piggy đã có tính năng mới: <strong>Phân loại ví</strong>
-                        </p>
-                        <p>
-                            Giờ bạn có thể tách riêng:
-                        </p>
+                        <p>{t('migration.description')}</p>
                         <ul className="list-disc list-inside space-y-1 ml-2">
-                            <li><strong>Tiền có sẵn</strong> (tiền mặt, ngân hàng)</li>
-                            <li><strong>Tài khoản tín dụng</strong> (thẻ tín dụng)</li>
+                            <li><strong>{t('wallet.typeAvailable')}</strong></li>
+                            <li><strong>{t('wallet.typeCredit')}</strong></li>
                         </ul>
-                        <p className="pt-2">
-                            Để sử dụng tính năng này, chúng tôi cần cập nhật {wallets.filter(w => !w.type).length} ví hiện tại của bạn.
-                        </p>
-                        <div className="p-3 bg-muted rounded-lg text-sm">
-                            <p className="font-medium mb-1">Điều gì sẽ xảy ra:</p>
-                            <ul className="space-y-1 text-muted-foreground">
-                                <li>✓ Tất cả ví sẽ được đặt thành &quot;Tiền có sẵn&quot;</li>
-                                <li>✓ Bạn có thể thay đổi loại ví sau</li>
-                                <li>✓ Quá trình an toàn, không mất dữ liệu</li>
-                            </ul>
-                        </div>
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="sm:justify-center">
@@ -109,10 +95,10 @@ export function MigrationModal() {
                         {isMigrating ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Đang cập nhật...
+                                {t('migration.migrating')}
                             </>
                         ) : (
-                            'Cập nhật ngay'
+                            t('migration.start')
                         )}
                     </Button>
                 </DialogFooter>

@@ -38,7 +38,7 @@ export default function DashboardPage() {
                         <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
                                 <DialogTitle>{t('transaction.transfer')}</DialogTitle>
-                                <DialogDescription>Transfer money between your wallets</DialogDescription>
+                                <DialogDescription>{t('transaction.transferDescription')}</DialogDescription>
                             </DialogHeader>
                             <TransferForm onSuccess={() => setTransferOpen(false)} />
                         </DialogContent>

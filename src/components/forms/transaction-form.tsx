@@ -145,7 +145,7 @@ export function TransactionForm({
                 {transaction?.isTransfer && (
                     <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-md mb-4 flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
                         <ArrowRightLeft className="h-4 w-4" />
-                        <span>{t('transaction.transferEditInfo') || "Giao dịch chuyển khoản. Không được phép đổi ví hoặc danh mục."}</span>
+                        <span>{t('transaction.transferEditInfo')}</span>
                     </div>
                 )}
 
@@ -226,7 +226,7 @@ export function TransactionForm({
                                                     ))}
                                                     {rootCategories.length === 0 && (
                                                         <div className="p-2 text-sm text-center text-muted-foreground">
-                                                            {t('No categories found')}
+                                                            {t('transaction.noTransactions')}
                                                         </div>
                                                     )}
                                                 </>
@@ -311,7 +311,7 @@ export function TransactionForm({
                             <FormItem>
                                 <FormLabel>{t('common.tags')}</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="travel, food, ..." {...field} />
+                                    <Input placeholder={t('transaction.tagsPlaceholder')} {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

@@ -26,14 +26,6 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const walletSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    initialBalance: z.number(),
-    balance: z.number(),
-    currency: z.enum(["VND", "USD"]),
-    type: z.enum(["available", "credit"]),
-});
-
 export interface WalletFormProps {
     onSuccess: () => void;
     wallet?: Wallet;
@@ -45,6 +37,14 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
     const { user } = useAuth();
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+    const walletSchema = z.object({
+        name: z.string().min(1, t('validation.nameRequired')),
+        initialBalance: z.number(),
+        balance: z.number(),
+        currency: z.enum(["VND", "USD"]),
+        type: z.enum(["available", "credit"]),
+    });
 
     const form = useForm<z.infer<typeof walletSchema>>({
         resolver: zodResolver(walletSchema),
@@ -220,7 +220,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>{t('wallet.delete')}</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        {t('wallet.confirmDelete')}
+                                        {t('validation.confirmDeleteAction')}
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
