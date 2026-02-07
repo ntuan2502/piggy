@@ -49,6 +49,8 @@ export function TransactionForm({
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<string>(transaction?.type || "expense");
 
+
+
     // Find category type helper
     const getCategoryType = (catId: string): TransactionType => {
         const cat = categories.find(c => c.id === catId);
@@ -88,6 +90,21 @@ export function TransactionForm({
             }
         }
     }, [profile, wallets, walletId, setValue]);
+
+    // Sync activeTab and form values when transaction prop changes
+    useEffect(() => {
+        if (transaction) {
+            setActiveTab(transaction.type);
+            form.reset({
+                amount: transaction.amount,
+                walletId: transaction.walletId,
+                categoryId: transaction.categoryId,
+                date: transaction.date,
+                note: transaction.note || "",
+                tags: transaction.tags?.join(", ") || "",
+            });
+        }
+    }, [transaction, form]);
 
     const onSubmit = async (values: z.infer<typeof transactionSchema>) => {
         if (!user) return;
@@ -130,7 +147,7 @@ export function TransactionForm({
 
     return (
         <Form {...form}>
-            <Tabs defaultValue="expense" className="w-full" onValueChange={(val) => {
+            <Tabs value={activeTab} className="w-full" onValueChange={(val) => {
                 setActiveTab(val);
                 form.setValue("categoryId", "");
             }}>
