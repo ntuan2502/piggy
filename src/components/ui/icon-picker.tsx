@@ -77,7 +77,7 @@ export function IconPicker({ value = "Circle", onChange, color = "#6366f1" }: Ic
             </PopoverTrigger>
             <PopoverContent className="w-80 p-3" align="start">
                 <Input
-                    placeholder={t('common.search') || "Search icons..."}
+                    placeholder={t('common.search')}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="mb-3"

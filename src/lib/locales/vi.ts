@@ -53,6 +53,7 @@ const vi = {
         delete: "Xóa",
         error: "Đã xảy ra lỗi",
         general: "Chung",
+        lastMonth: "Tháng trước",
         loading: "Đang tải...",
         logout: "Đăng xuất",
         name: "Tên",
@@ -61,11 +62,14 @@ const vi = {
         ok: "Đồng ý",
         optional: "Tùy chọn",
         pickDate: "Chọn ngày",
+        quickSelect: "Chọn nhanh",
         save: "Lưu",
         saving: "Đang lưu...",
         search: "Tìm kiếm...",
         settings: "Cài đặt",
         tags: "Thẻ (Tags)",
+        thisMonth: "Tháng này",
+        thisYear: "Năm nay",
         toggleSidebar: "Ẩn/Hiện thanh bên",
         user: "Người dùng"
     },
@@ -105,8 +109,11 @@ const vi = {
         comingSoon: "Biểu đồ sẽ sớm ra mắt (Giai đoạn 5)",
         incomeVsExpense: "Thu nhập vs Chi tiêu",
         monthlyExpense: "Chi tiêu hàng tháng",
+        netIncome: "Thu nhập ròng",
         overview: "Tổng hợp",
-        title: "Báo cáo"
+        title: "Báo cáo",
+        topCategories: "Top Danh Mục",
+        trend: "Xu hướng"
     },
     settings: {
         dataDesc: "Quản lý dữ liệu ứng dụng.",

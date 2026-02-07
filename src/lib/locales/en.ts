@@ -53,6 +53,7 @@ const en = {
         delete: "Delete",
         error: "An error occurred",
         general: "General",
+        lastMonth: "Last Month",
         loading: "Loading...",
         logout: "Logout",
         name: "Name",
@@ -61,11 +62,14 @@ const en = {
         ok: "OK",
         optional: "Optional",
         pickDate: "Pick a date",
+        quickSelect: "Quick Select",
         save: "Save",
         saving: "Saving...",
         search: "Search...",
         settings: "Settings",
         tags: "Tags",
+        thisMonth: "This Month",
+        thisYear: "This Year",
         toggleSidebar: "Toggle Sidebar",
         user: "User"
     },
@@ -105,8 +109,11 @@ const en = {
         comingSoon: "Charts coming soon (Phase 5)",
         incomeVsExpense: "Income vs Expense",
         monthlyExpense: "Monthly Expense",
+        netIncome: "Net Income",
         overview: "Overview",
-        title: "Reports"
+        title: "Reports",
+        topCategories: "Top Categories",
+        trend: "Trend"
     },
     settings: {
         dataDesc: "Manage your application data.",
