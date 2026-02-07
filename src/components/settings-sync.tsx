@@ -24,7 +24,7 @@ export function SettingsSync() {
                 setTheme(profileTheme);
             }
         }
-    }, [profile, loading]);
+    }, [profile, loading, setTheme, theme, i18n]);
 
     return null; // This component render nothing
 }

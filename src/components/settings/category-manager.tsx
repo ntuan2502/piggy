@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCategories } from "@/hooks/use-categories";
 import { useAuth } from "@/components/providers/auth-provider";
 import { addCategory, updateCategory, deleteCategory } from "@/services/category.service";

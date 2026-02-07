@@ -53,9 +53,10 @@ export function UserPreferences() {
             }
 
             toast.success(t('settings.preferencesSaved'));
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to save preferences:", error);
-            toast.error(error?.message || t('common.error'));
+            const errorMessage = error instanceof Error ? error.message : t('common.error');
+            toast.error(errorMessage);
         } finally {
             setSaving(false);
         }

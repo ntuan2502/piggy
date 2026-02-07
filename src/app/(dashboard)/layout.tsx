@@ -3,7 +3,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import ProtectedRoute from "@/components/layout/protected-route";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Wallet, PieChart, LogOut, Layers, Receipt, Settings, ChevronUp, User2 } from "lucide-react";
+import { LayoutDashboard, Wallet, PieChart, LogOut, Receipt, Settings, ChevronUp } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { useTranslation } from "react-i18next";
 import { MigrationModal } from "@/components/migration-modal";
@@ -22,7 +22,7 @@ import {
     SidebarProvider,
     SidebarRail,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import "@/lib/i18n";
 
@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                         <SidebarMenuButton size="lg">
                                             <Avatar className="h-8 w-8">
                                                 {user?.photoURL && (
-                                                    <img src={user.photoURL} alt="Avatar" className="h-full w-full object-cover rounded-full" />
+                                                    <AvatarImage src={user.photoURL} alt="Avatar" className="object-cover" />
                                                 )}
                                                 <AvatarFallback className="bg-green-600 text-white">
                                                     {getUserInitials()}

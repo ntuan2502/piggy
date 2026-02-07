@@ -43,14 +43,11 @@ export function MigrationModal() {
 
         setIsMigrating(true);
         try {
-            let updated = 0;
-
             for (const wallet of wallets) {
                 if (!wallet.type) {
                     await updateDoc(doc(db, "wallets", wallet.id), {
                         type: "available"
                     });
-                    updated++;
                 }
             }
 

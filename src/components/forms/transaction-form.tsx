@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { ArrowRightLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -19,7 +18,7 @@ import { useCategories } from "@/hooks/use-categories";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { useState, useEffect } from "react";
 import { TransactionType, Transaction } from "@/types";
-import { formatVNCurrency, parseVNCurrency, formatVNCurrencyInput, formatVNDate } from "@/lib/format";
+import { formatVNCurrency, parseVNCurrency, formatVNCurrencyInput } from "@/lib/format";
 import { addTransaction, updateTransaction } from "@/services/transaction.service";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -77,8 +76,8 @@ export function TransactionForm({
     });
 
     // Set default wallet
-    const { setValue, watch } = form; // Destructure for effect dependencies
-    const walletId = watch("walletId");
+    const { setValue } = form;
+    const walletId = useWatch({ control: form.control, name: "walletId" });
 
     useEffect(() => {
         if (profile?.defaultWalletId && !walletId) {
