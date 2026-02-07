@@ -71,6 +71,7 @@ const vi = {
         tags: "Thẻ (Tags)",
         thisMonth: "Tháng này",
         thisYear: "Năm nay",
+        total: "Tổng cộng",
         toggleSidebar: "Ẩn/Hiện thanh bên",
         user: "Người dùng"
     },

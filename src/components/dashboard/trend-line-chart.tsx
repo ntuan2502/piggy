@@ -1,5 +1,5 @@
 "use client"
-import { CartesianGrid, XAxis, Area, AreaChart } from "recharts"
+import { CartesianGrid, XAxis, YAxis, Area, AreaChart } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTranslation } from "react-i18next"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -25,7 +25,7 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                    <AreaChart data={data} margin={{ left: 12, right: 12, top: 12 }}>
+                    <AreaChart data={data} margin={{ left: 0, right: 12, top: 12 }}>
                         <defs>
                             <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.8} />
@@ -52,20 +52,30 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                                 }
                             }}
                         />
+                        <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            tickFormatter={(value) => {
+                                if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                                if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
+                                return value;
+                            }}
+                        />
                         <ChartTooltip
                             cursor={false}
                             content={<ChartTooltipContent indicator="dot" formatter={(value) => formatVNCurrency(Number(value))} />}
                         />
                         <Area
                             dataKey="income"
-                            type="natural"
+                            type="monotone"
                             fill="url(#fillIncome)"
                             stroke="var(--color-income)"
                             stackId="a"
                         />
                         <Area
                             dataKey="expense"
-                            type="natural"
+                            type="monotone"
                             fill="url(#fillExpense)"
                             stroke="var(--color-expense)"
                             stackId="b"

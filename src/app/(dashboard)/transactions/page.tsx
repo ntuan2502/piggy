@@ -24,6 +24,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import {
     AlertDialog,
@@ -451,7 +452,14 @@ export default function TransactionsPage() {
                                                 {transaction.note || "-"}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={getTypeBadgeVariant(transaction.type)}>
+                                                <Badge
+                                                    variant={getTypeBadgeVariant(transaction.type)}
+                                                    className={
+                                                        transaction.type === 'income' || transaction.type === 'debt'
+                                                            ? 'bg-green-500 hover:bg-green-600 text-white border-0'
+                                                            : ''
+                                                    }
+                                                >
                                                     {t(`transaction.${transaction.type}`)}
                                                 </Badge>
                                             </TableCell>
@@ -492,7 +500,11 @@ export default function TransactionsPage() {
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>{t('transaction.edit')}</DialogTitle>
+                        <div className="hidden" id="edit-desc">{t('transaction.editDescription')}</div>
                     </DialogHeader>
+                    <DialogDescription className="hidden">
+                        {t('transaction.edit')}
+                    </DialogDescription>
                     {editingTransaction && (
                         <TransactionForm
                             transaction={editingTransaction}

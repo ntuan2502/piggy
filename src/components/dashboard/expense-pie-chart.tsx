@@ -47,7 +47,12 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
                     <PieChart>
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
+                            content={<ChartTooltipContent hideLabel formatter={(value, name) => (
+                                <div className="flex items-center justify-between gap-4 w-full">
+                                    <span className="text-muted-foreground">{name}:</span>
+                                    <span className="font-mono font-medium">{formatVNCurrency(Number(value))}</span>
+                                </div>
+                            )} />}
                         />
                         <Pie
                             data={data}
@@ -69,16 +74,16 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
                                                 <tspan
                                                     x={viewBox.cx}
                                                     y={viewBox.cy}
-                                                    className="fill-foreground text-3xl font-bold"
+                                                    className="fill-foreground text-xl font-bold"
                                                 >
                                                     {formatVNCurrency(total)}
                                                 </tspan>
                                                 <tspan
                                                     x={viewBox.cx}
-                                                    y={(viewBox.cy || 0) + 24}
-                                                    className="fill-muted-foreground"
+                                                    y={(viewBox.cy || 0) + 20}
+                                                    className="fill-muted-foreground text-xs"
                                                 >
-                                                    Total
+                                                    {t('common.total')}
                                                 </tspan>
                                             </text>
                                         );

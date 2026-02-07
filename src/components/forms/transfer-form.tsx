@@ -51,6 +51,8 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
         defaultValues: {
             date: new Date(),
             note: "",
+            fromWalletId: "",
+            toWalletId: "",
         },
     });
 

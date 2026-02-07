@@ -71,6 +71,7 @@ const en = {
         tags: "Tags",
         thisMonth: "This Month",
         thisYear: "This Year",
+        total: "Total",
         toggleSidebar: "Toggle Sidebar",
         user: "User"
     },

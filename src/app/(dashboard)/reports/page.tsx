@@ -13,7 +13,7 @@ import { DateRange } from "react-day-picker";
 
 export default function ReportsPage() {
     const { t } = useTranslation();
-    const { transactions, loading } = useTransactions();
+    const { transactions, loading } = useTransactions(1000);
     const { categories } = useCategories();
 
     // Default to this month
@@ -102,14 +102,16 @@ export default function ReportsPage() {
 
             <StatsCards income={stats.income} expense={stats.expense} net={stats.net} />
 
-            <div className="grid gap-4 md:grid-cols-2">
-                <TrendLineChart data={trendData} />
-                <div className="min-h-[300px]">
+            <div className="grid gap-4 md:grid-cols-12">
+                <div className="md:col-span-8">
+                    <TrendLineChart data={trendData} />
+                </div>
+                <div className="md:col-span-4 min-h-[300px]">
                     <ExpensePieChart data={pieData} />
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-1">
+            <div className="grid gap-4 md:col-span-12">
                 <CategoryBreakdown data={breakdownData} />
             </div>
         </div>

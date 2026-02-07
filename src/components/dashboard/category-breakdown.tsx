@@ -27,12 +27,14 @@ export function CategoryBreakdown({ data }: { data: CategoryData[] }) {
                 <CardTitle>{t('report.topCategories')}</CardTitle>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                <ChartContainer config={chartConfig} className={`w-full ${data.length <= 3 ? 'h-[150px]' : 'h-[300px]'}`}>
                     <BarChart
                         accessibilityLayer
                         data={sortedData}
                         layout="vertical"
-                        margin={{ left: 80 }}
+                        margin={{ left: 80, right: 40 }}
+                        barSize={16}
+                        barGap={0}
                     >
                         <YAxis
                             dataKey="category"
@@ -40,14 +42,20 @@ export function CategoryBreakdown({ data }: { data: CategoryData[] }) {
                             tickLine={false}
                             tickMargin={10}
                             axisLine={false}
-                            width={120}
+                            width={160}
+                            fontSize={12}
                         />
                         <XAxis dataKey="amount" type="number" hide />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent hideLabel formatter={(value) => formatVNCurrency(Number(value))} />}
+                            content={<ChartTooltipContent hideLabel formatter={(value, name) => (
+                                <div className="flex items-center justify-between gap-4 w-full">
+                                    <span className="text-muted-foreground">{name}:</span>
+                                    <span className="font-mono font-medium">{formatVNCurrency(Number(value))}</span>
+                                </div>
+                            )} />}
                         />
-                        <Bar dataKey="amount" fill="var(--color-amount)" radius={5} />
+                        <Bar dataKey="amount" fill="var(--color-amount)" radius={4} />
                     </BarChart>
                 </ChartContainer>
             </CardContent>
