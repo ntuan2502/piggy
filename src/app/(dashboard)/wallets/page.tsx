@@ -95,10 +95,13 @@ export default function WalletsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold">{t('wallet.title')}</h1>
-                    <p className="text-muted-foreground">{t('wallet.description')}</p>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
+                <div className="flex items-center gap-2">
+                    <WalletIcon className="h-8 w-8" />
+                    <div>
+                        <h1 className="text-3xl font-bold">{t('wallet.title')}</h1>
+                        <p className="text-muted-foreground">{t('wallet.description')}</p>
+                    </div>
                 </div>
                 <Dialog open={open} onOpenChange={(val) => {
                     if (!val) setEditingWallet(null);

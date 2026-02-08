@@ -263,7 +263,7 @@ export function CategoryManager() {
     return (
         <div>
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <CardTitle>{t('category.management')}</CardTitle>
                     <div className="flex gap-2">
                         <Tooltip>

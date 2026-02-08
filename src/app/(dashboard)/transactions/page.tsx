@@ -10,7 +10,8 @@ import {
     Filter,
     X,
     Sparkles,
-    Loader2
+    Loader2,
+    Receipt
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -302,11 +303,14 @@ export default function TransactionsPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold">{t('transaction.allTransactions')}</h1>
-                    <p className="text-muted-foreground mt-2">
-                        {filteredTransactions.length} / {transactions.length} {t('transaction.item')}
-                    </p>
+                <div className="flex items-center gap-2">
+                    <Receipt className="h-8 w-8" />
+                    <div>
+                        <h1 className="text-3xl font-bold">{t('transaction.allTransactions')}</h1>
+                        <p className="text-muted-foreground">
+                            {filteredTransactions.length} / {transactions.length} {t('transaction.item')}
+                        </p>
+                    </div>
                 </div>
                 {uncategorizedTransactions.length > 0 && (
                     <Button

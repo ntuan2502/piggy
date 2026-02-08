@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatVNCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRightLeft } from "lucide-react";
+import { Plus, ArrowRightLeft, LayoutDashboard } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { TransactionForm } from "@/components/forms/transaction-form";
 import { TransferForm } from "@/components/forms/transfer-form";
@@ -26,8 +26,11 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard')}</h2>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
+                <div className="flex items-center gap-2">
+                    <LayoutDashboard className="h-8 w-8" />
+                    <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard')}</h2>
+                </div>
                 <div className="flex gap-2">
                     <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
                         <DialogTrigger asChild>

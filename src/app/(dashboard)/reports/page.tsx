@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { PieChart } from "lucide-react";
 import { DateRange } from "react-day-picker";
 
 import { ExpensePieChart } from "@/components/dashboard/expense-pie-chart";
@@ -99,7 +100,10 @@ export default function ReportsPage() {
     return (
         <div className="space-y-6 pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 className="text-3xl font-bold tracking-tight">{t('report.title')}</h2>
+                <div className="flex items-center gap-2">
+                    <PieChart className="h-8 w-8" />
+                    <h2 className="text-3xl font-bold tracking-tight">{t('report.title')}</h2>
+                </div>
                 <DateRangePicker date={dateRange} setDate={setDateRange} />
             </div>
 
