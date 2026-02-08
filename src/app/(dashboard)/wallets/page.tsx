@@ -7,9 +7,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useWallets } from "@/hooks/use-wallets";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { updateUserProfile } from "@/services/user.service";
+import { recalculateAllWalletBalances } from "@/services/wallet.service";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Wallet } from "@/types";
-import { Plus, Wallet as WalletIcon, Star, CreditCard, Banknote } from "lucide-react";
+import { Plus, Wallet as WalletIcon, Star, CreditCard, Banknote, RefreshCw, Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { formatVNCurrency } from "@/lib/format";
@@ -23,6 +24,7 @@ export default function WalletsPage() {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
+    const [isRecalculating, setIsRecalculating] = useState(false);
 
     // Group wallets by type
     const { availableWallets, creditWallets, availableTotal, creditTotal, netWorth } = useMemo(() => {
@@ -58,6 +60,20 @@ export default function WalletsPage() {
         }
     };
 
+    const handleRecalculate = async () => {
+        if (!user) return;
+        setIsRecalculating(true);
+        try {
+            await recalculateAllWalletBalances(user.uid);
+            toast.success(t('wallet.recalculateSuccess'));
+        } catch (error) {
+            console.error(error);
+            toast.error(t('wallet.recalculateFailed'));
+        } finally {
+            setIsRecalculating(false);
+        }
+    };
+
     if (loading) return <div>{t('common.loading')}</div>;
 
     return (
@@ -71,12 +87,23 @@ export default function WalletsPage() {
                     if (!val) setEditingWallet(null);
                     setOpen(val);
                 }}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            {t('wallet.add')}
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={handleRecalculate}
+                            disabled={isRecalculating}
+                            title={t('wallet.recalculate')}
+                        >
+                            {isRecalculating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                            {t('wallet.recalculate')}
                         </Button>
-                    </DialogTrigger>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <Plus className="w-4 h-4 mr-2" />
+                                {t('wallet.add')}
+                            </Button>
+                        </DialogTrigger>
+                    </div>
                     <DialogContent className="max-w-lg">
                         <DialogHeader>
                             <DialogTitle>{editingWallet ? t('wallet.edit') : t('wallet.add')}</DialogTitle>

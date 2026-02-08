@@ -94,3 +94,63 @@ export const createDefaultWallet = async (userId: string) => {
         });
     }
 };
+
+/**
+ * Recalculates the balance for all wallets of a user based on transaction history.
+ * Formula: newBalance = initialBalance + SUM(income) - SUM(expense)
+ * For transfers: outgoing = expense, incoming = income on that wallet
+ */
+export const recalculateAllWalletBalances = async (userId: string): Promise<number> => {
+    const { runTransaction } = await import("firebase/firestore");
+
+    // Get all wallets for user
+    const walletsQuery = query(collection(db, COLLECTION_NAME), where("userId", "==", userId));
+    const walletsSnapshot = await getDocs(walletsQuery);
+
+    if (walletsSnapshot.empty) return 0;
+
+    // Get all transactions for user
+    const transactionsQuery = query(collection(db, "transactions"), where("userId", "==", userId));
+    const transactionsSnapshot = await getDocs(transactionsQuery);
+
+    // Calculate balance delta per wallet from transactions
+    const walletDeltas: Record<string, number> = {};
+
+    transactionsSnapshot.forEach((doc) => {
+        const tx = doc.data();
+        const walletId = tx.walletId;
+        const amount = tx.amount || 0;
+        const type = tx.type;
+
+        if (!walletDeltas[walletId]) {
+            walletDeltas[walletId] = 0;
+        }
+
+        if (type === "income") {
+            walletDeltas[walletId] += amount;
+        } else if (type === "expense") {
+            walletDeltas[walletId] -= amount;
+        }
+        // Note: transfers are already recorded as expense/income on respective wallets
+    });
+
+    // Update each wallet with recalculated balance
+    let updatedCount = 0;
+    await runTransaction(db, async (firestoreTransaction) => {
+        for (const walletDoc of walletsSnapshot.docs) {
+            const walletData = walletDoc.data();
+            const walletId = walletDoc.id;
+            const initialBalance = walletData.initialBalance || 0;
+            const transactionDelta = walletDeltas[walletId] || 0;
+            const newBalance = initialBalance + transactionDelta;
+
+            firestoreTransaction.update(doc(db, COLLECTION_NAME, walletId), {
+                balance: newBalance,
+                updatedAt: serverTimestamp()
+            });
+            updatedCount++;
+        }
+    });
+
+    return updatedCount;
+};
