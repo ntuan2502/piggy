@@ -1,21 +1,38 @@
 "use client";
 
-import { WalletForm } from "@/components/forms/wallet-form";
+import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Plus,
+    Wallet as WalletIcon,
+    Star,
+    CreditCard,
+    Banknote,
+    RefreshCw,
+    Loader2
+} from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog";
+import { WalletForm } from "@/components/forms/wallet-form";
+
 import { useWallets } from "@/hooks/use-wallets";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { updateUserProfile } from "@/services/user.service";
 import { recalculateAllWalletBalances } from "@/services/wallet.service";
 import { useAuth } from "@/components/providers/auth-provider";
-import { Wallet } from "@/types";
-import { Plus, Wallet as WalletIcon, Star, CreditCard, Banknote, RefreshCw, Loader2 } from "lucide-react";
-import { useState, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { formatVNCurrency } from "@/lib/format";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Wallet } from "@/types";
 
 export default function WalletsPage() {
     const { wallets, loading } = useWallets();
@@ -150,7 +167,7 @@ export default function WalletsPage() {
                         ({formatVNCurrency(availableTotal)} VND)
                     </span>
                 </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {availableWallets.map((wallet) => (
                         <Card
                             key={wallet.id}
@@ -198,7 +215,7 @@ export default function WalletsPage() {
                     </span>
                 </div>
                 {creditWallets.length > 0 ? (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                         {creditWallets.map((wallet) => (
                             <Card
                                 key={wallet.id}

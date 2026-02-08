@@ -26,7 +26,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import "@/lib/i18n";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+import { ReactNode } from "react";
+
+export default function DashboardLayout({ children }: { children: ReactNode }) {
     const { user } = useAuth();
     const router = useRouter();
     const pathname = usePathname();

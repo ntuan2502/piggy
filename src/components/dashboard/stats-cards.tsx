@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export function StatsCards({ income, expense, net, className }: { income: number, expense: number, net: number, className?: string }) {
     const { t } = useTranslation();
     return (
-        <div className={cn("grid gap-4 md:grid-cols-3", className)}>
+        <div className={cn("grid gap-4 grid-cols-1 md:grid-cols-3", className)}>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">{t('transaction.income')}</CardTitle>

@@ -1,15 +1,18 @@
 "use client";
-import { useTransactions } from "@/hooks/use-transactions";
-import { useCategories } from "@/hooks/use-categories";
+
 import { useMemo, useState } from "react";
-import { ExpensePieChart } from "@/components/dashboard/expense-pie-chart";
 import { useTranslation } from "react-i18next";
+import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { DateRange } from "react-day-picker";
+
+import { ExpensePieChart } from "@/components/dashboard/expense-pie-chart";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { TrendLineChart } from "@/components/dashboard/trend-line-chart";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { DateRange } from "react-day-picker";
+
+import { useTransactions } from "@/hooks/use-transactions";
+import { useCategories } from "@/hooks/use-categories";
 
 export default function ReportsPage() {
     const { t } = useTranslation();
@@ -102,7 +105,7 @@ export default function ReportsPage() {
 
             <StatsCards income={stats.income} expense={stats.expense} net={stats.net} />
 
-            <div className="grid gap-4 md:grid-cols-12">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-12">
                 <div className="md:col-span-8">
                     <TrendLineChart data={trendData} />
                 </div>
@@ -111,7 +114,7 @@ export default function ReportsPage() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:col-span-12">
+            <div className="grid gap-4 grid-cols-1 md:col-span-12">
                 <CategoryBreakdown data={breakdownData} />
             </div>
         </div>

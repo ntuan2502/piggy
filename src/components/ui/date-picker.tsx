@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { format, setMonth, setYear } from "date-fns";
 import { vi, enUS } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
@@ -50,8 +50,8 @@ export function DatePicker({
     className,
 }: DatePickerProps) {
     const { t, i18n } = useTranslation();
-    const [open, setOpen] = React.useState(false);
-    const [calendarDate, setCalendarDate] = React.useState<Date>(value || new Date());
+    const [open, setOpen] = useState(false);
+    const [calendarDate, setCalendarDate] = useState<Date>(value || new Date());
 
     const isVietnamese = i18n.language === 'vi';
     const locale = isVietnamese ? vi : enUS;

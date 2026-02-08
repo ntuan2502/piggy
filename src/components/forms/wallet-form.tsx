@@ -126,7 +126,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                     )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="initialBalance"
@@ -162,7 +162,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="type"

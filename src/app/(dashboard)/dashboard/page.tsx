@@ -60,7 +60,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{t('wallet.netWorth')}</CardTitle>
@@ -93,7 +93,7 @@ export default function DashboardPage() {
                 </Card>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-7">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-1 lg:grid-cols-7">
                 <RecentTransactions />
                 {/* Placeholder for future Chart */}
                 <Card className="col-span-4">

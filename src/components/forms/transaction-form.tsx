@@ -1,27 +1,41 @@
 "use client";
 
-import * as React from "react";
+import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRightLeft, Sparkles, Loader2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage
+} from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRightLeft, Sparkles, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CategoryIcon } from "@/components/ui/category-icon";
+import { DatePicker } from "@/components/ui/date-picker";
+
 import { useAuth } from "@/components/providers/auth-provider";
 import { useWallets } from "@/hooks/use-wallets";
 import { useCategories } from "@/hooks/use-categories";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { useState, useEffect } from "react";
-import { TransactionType, Transaction } from "@/types";
-import { formatVNCurrency, parseVNCurrency, formatVNCurrencyInput } from "@/lib/format";
 import { addTransaction, updateTransaction } from "@/services/transaction.service";
-import { CategoryIcon } from "@/components/ui/category-icon";
-import { DatePicker } from "@/components/ui/date-picker";
+import { formatVNCurrency, parseVNCurrency, formatVNCurrencyInput } from "@/lib/format";
+import { TransactionType, Transaction } from "@/types";
 
 const transactionSchema = z.object({
     amount: z.number().min(0.01, "Amount must be positive"),
@@ -51,10 +65,7 @@ export function TransactionForm({
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 
-
-
-    // Find category type helper
-    // Find category type helper
+    // Helper: Determine transaction type from category
     const getCategoryType = (catId?: string): TransactionType => {
         if (!catId) return 'expense';
         const cat = categories.find(c => c.id === catId);

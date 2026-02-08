@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { useCategories } from "@/hooks/use-categories";
 import { useAuth } from "@/components/providers/auth-provider";
 import { addCategory, updateCategory, deleteCategory, resetCategories } from "@/services/category.service";
@@ -63,7 +63,7 @@ function SortableCategoryItem({
     category: Category;
     onEdit: (cat: Category) => void;
     onDelete: (id: string) => void;
-    children?: React.ReactNode;
+    children?: ReactNode;
     isParent?: boolean;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({

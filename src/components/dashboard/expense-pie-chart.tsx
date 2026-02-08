@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useMemo } from "react";
 import { Label, Pie, PieChart } from "recharts";
 import { useTranslation } from "react-i18next";
 import { formatVNCurrency } from "@/lib/format";
@@ -29,7 +29,7 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
         // For now we pass fill color in data
     } satisfies ChartConfig;
 
-    const total = React.useMemo(() => {
+    const total = useMemo(() => {
         return data.reduce((acc, curr) => acc + curr.amount, 0);
     }, [data]);
 

@@ -1,13 +1,18 @@
 "use client";
 
-import * as React from "react";
-import { useTransactions } from "@/hooks/use-transactions";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { formatVNCurrency, formatVNDate } from "@/lib/format";
-import { deleteTransaction, updateTransaction } from "@/services/transaction.service";
 import { toast } from "sonner";
-import { Pencil, Trash2, Search, Filter, X, Sparkles, Loader2 } from "lucide-react";
+import {
+    Pencil,
+    Trash2,
+    Search,
+    Filter,
+    X,
+    Sparkles,
+    Loader2
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,13 +48,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { TransactionForm } from "@/components/forms/transaction-form";
-import { Transaction } from "@/types";
+
+import { useTransactions } from "@/hooks/use-transactions";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useWallets } from "@/hooks/use-wallets";
 import { useCategories } from "@/hooks/use-categories";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { CategoryIcon } from "@/components/ui/category-icon";
-import { Badge } from "@/components/ui/badge";
+import { deleteTransaction, updateTransaction } from "@/services/transaction.service";
+import { formatVNCurrency, formatVNDate } from "@/lib/format";
+import { Transaction } from "@/types";
 
 export default function TransactionsPage() {
     const { t } = useTranslation();
@@ -58,14 +68,14 @@ export default function TransactionsPage() {
     const { wallets } = useWallets();
     const { categories } = useCategories();
     const { profile } = useUserProfile();
-    const [editingTransaction, setEditingTransaction] = React.useState<Transaction | null>(null);
-    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
-    const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
-    const [transactionToDelete, setTransactionToDelete] = React.useState<string | null>(null);
-    const [isAutoCategorizing, setIsAutoCategorizing] = React.useState(false);
+    const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+    const [isAutoCategorizing, setIsAutoCategorizing] = useState(false);
 
     // Identify uncategorized transactions (empty ID or ID not found in categories)
-    const uncategorizedTransactions = React.useMemo(() => {
+    const uncategorizedTransactions = useMemo(() => {
         const validCategoryIds = new Set(categories.map(c => c.id));
         return transactions.filter(t =>
             !t.isTransfer && // Exclude transfers
@@ -150,10 +160,10 @@ export default function TransactionsPage() {
     };
 
     // Enhanced filters
-    const [searchQuery, setSearchQuery] = React.useState("");
-    const [typeFilter, setTypeFilter] = React.useState<string>("all");
-    const [walletFilter, setWalletFilter] = React.useState<string>("all");
-    const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [typeFilter, setTypeFilter] = useState<string>("all");
+    const [walletFilter, setWalletFilter] = useState<string>("all");
+    const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
     const handleEdit = (transaction: Transaction) => {
         setEditingTransaction(transaction);
@@ -188,20 +198,20 @@ export default function TransactionsPage() {
 
     const hasActiveFilters = searchQuery || typeFilter !== "all" || walletFilter !== "all" || categoryFilter !== "all";
 
-    const getWallet = React.useCallback((walletId?: string) => {
+    const getWallet = useCallback((walletId?: string) => {
         return wallets.find(w => w.id === walletId);
     }, [wallets]);
 
-    const getWalletName = React.useCallback((walletId?: string) => {
+    const getWalletName = useCallback((walletId?: string) => {
         const wallet = getWallet(walletId);
         return wallet?.name || walletId || "";
     }, [getWallet]);
 
-    const getCategory = React.useCallback((categoryId?: string) => {
+    const getCategory = useCallback((categoryId?: string) => {
         return categories.find(c => c.id === categoryId);
     }, [categories]);
 
-    const getCategoryName = React.useCallback((categoryId?: string) => {
+    const getCategoryName = useCallback((categoryId?: string) => {
         const category = getCategory(categoryId);
         return category?.name || categoryId || "";
     }, [getCategory]);
@@ -233,14 +243,14 @@ export default function TransactionsPage() {
     };
 
     // Get root categories for filter dropdown (sorted by order)
-    const rootCategories = React.useMemo(() => {
+    const rootCategories = useMemo(() => {
         return categories
             .filter(c => !c.parentId)
             .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
     }, [categories]);
 
     // Filter and search logic
-    const filteredTransactions = React.useMemo(() => {
+    const filteredTransactions = useMemo(() => {
         return transactions.filter(transaction => {
             // Type filter
             if (typeFilter !== "all" && transaction.type !== typeFilter) {
@@ -411,87 +421,173 @@ export default function TransactionsPage() {
                 </Card>
             ) : (
                 <Card>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[120px] pl-6">{t('common.date')}</TableHead>
-                                    <TableHead>{t('category.title')}</TableHead>
-                                    <TableHead>{t('wallet.title')}</TableHead>
-                                    <TableHead>{t('common.note')}</TableHead>
-                                    <TableHead className="w-[100px]">{t('transaction.item')}</TableHead>
-                                    <TableHead className="text-right w-[150px]">{t('common.amount')}</TableHead>
-                                    <TableHead className="text-right w-[100px] pr-6">{t('common.actions')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredTransactions.map((transaction) => {
-                                    const category = getCategory(transaction.categoryId);
-                                    const wallet = getWallet(transaction.walletId);
 
-                                    return (
-                                        <TableRow key={transaction.id} className="hover:bg-muted/50">
-                                            <TableCell className="font-medium whitespace-nowrap pl-6">
-                                                {formatVNDate(transaction.date)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    {category && (
-                                                        <CategoryIcon
-                                                            iconName={category.icon}
-                                                            color={category.color}
-                                                        />
-                                                    )}
-                                                    <span>{category?.name || transaction.categoryId}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                                {wallet?.name || transaction.walletId}
-                                            </TableCell>
-                                            <TableCell className="max-w-[200px] truncate" title={transaction.note}>
-                                                {transaction.note || "-"}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={getTypeBadgeVariant(transaction.type)}
-                                                    className={
-                                                        transaction.type === 'income' || transaction.type === 'debt'
-                                                            ? 'bg-green-500 hover:bg-green-600 text-white border-0'
-                                                            : ''
-                                                    }
+                    <CardContent className="p-0">
+                        {/* Mobile View: List of Cards */}
+                        <div className="md:hidden flex flex-col divide-y">
+                            {filteredTransactions.map((transaction) => {
+                                const category = getCategory(transaction.categoryId);
+                                const wallet = getWallet(transaction.walletId);
+                                const isIncome = transaction.type === 'income' || transaction.type === 'debt';
+
+                                return (
+                                    <div key={transaction.id} className="p-4 flex flex-col gap-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            {/* Icon & Category/Note */}
+                                            <div className="flex items-start gap-3 overflow-hidden">
+                                                <div
+                                                    className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 border-2 ${isIncome
+                                                        ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                                                        : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
+                                                        }`}
+                                                    style={category?.color ? {
+                                                        backgroundColor: category.color + '15',
+                                                        borderColor: category.color + '40'
+                                                    } : undefined}
                                                 >
-                                                    {t(`transaction.${transaction.type}`)}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className={`text-right font-semibold whitespace-nowrap ${getTypeColor(transaction.type)}`}>
-                                                {transaction.type === 'income' || transaction.type === 'debt' ? '+' : '-'}
-                                                {formatVNCurrency(transaction.amount)}
-                                            </TableCell>
-                                            <TableCell className="text-right pr-6">
-                                                <div className="flex justify-end gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        onClick={() => handleEdit(transaction)}
-                                                    >
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                                        onClick={() => handleDeleteClick(transaction.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    {category?.icon ? (
+                                                        <CategoryIcon iconName={category.icon} color={category.color} className="h-5 w-5" />
+                                                    ) : (
+                                                        <span className="text-xs font-bold">{category?.name?.[0] || "?"}</span>
+                                                    )}
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
+                                                <div className="min-w-0">
+                                                    <div className="font-semibold truncate">
+                                                        {transaction.note || category?.name || t('common.noNote')}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground flex flex-wrap gap-1 items-center">
+                                                        <span>{formatVNDate(transaction.date)}</span>
+                                                        <span>•</span>
+                                                        <span>{wallet?.name}</span>
+                                                        {category && (
+                                                            <>
+                                                                <span>•</span>
+                                                                <span>{category.name}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Amount */}
+                                            <div className={`font-bold whitespace-nowrap ${getTypeColor(transaction.type)}`}>
+                                                {isIncome ? '+' : '-'}
+                                                {formatVNCurrency(transaction.amount)}
+                                            </div>
+                                        </div>
+
+                                        {/* Actions & Badge */}
+                                        <div className="flex items-center justify-between mt-1">
+                                            <Badge variant={getTypeBadgeVariant(transaction.type)} className="text-[10px] h-5 px-1.5">
+                                                {t(`transaction.${transaction.type}`)}
+                                            </Badge>
+                                            <div className="flex gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                    onClick={() => handleEdit(transaction)}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                                    onClick={() => handleDeleteClick(transaction.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Desktop View: Table */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[120px] pl-6">{t('common.date')}</TableHead>
+                                        <TableHead>{t('category.title')}</TableHead>
+                                        <TableHead>{t('wallet.title')}</TableHead>
+                                        <TableHead>{t('common.note')}</TableHead>
+                                        <TableHead className="w-[100px]">{t('transaction.item')}</TableHead>
+                                        <TableHead className="text-right w-[150px]">{t('common.amount')}</TableHead>
+                                        <TableHead className="text-right w-[100px] pr-6">{t('common.actions')}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredTransactions.map((transaction) => {
+                                        const category = getCategory(transaction.categoryId);
+                                        const wallet = getWallet(transaction.walletId);
+
+                                        return (
+                                            <TableRow key={transaction.id} className="hover:bg-muted/50">
+                                                <TableCell className="font-medium whitespace-nowrap pl-6">
+                                                    {formatVNDate(transaction.date)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        {category && (
+                                                            <CategoryIcon
+                                                                iconName={category.icon}
+                                                                color={category.color}
+                                                            />
+                                                        )}
+                                                        <span>{category?.name || transaction.categoryId}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {wallet?.name || transaction.walletId}
+                                                </TableCell>
+                                                <TableCell className="max-w-[200px] truncate" title={transaction.note}>
+                                                    {transaction.note || "-"}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge
+                                                        variant={getTypeBadgeVariant(transaction.type)}
+                                                        className={
+                                                            transaction.type === 'income' || transaction.type === 'debt'
+                                                                ? 'bg-green-500 hover:bg-green-600 text-white border-0'
+                                                                : ''
+                                                        }
+                                                    >
+                                                        {t(`transaction.${transaction.type}`)}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className={`text-right font-semibold whitespace-nowrap ${getTypeColor(transaction.type)}`}>
+                                                    {transaction.type === 'income' || transaction.type === 'debt' ? '+' : '-'}
+                                                    {formatVNCurrency(transaction.amount)}
+                                                </TableCell>
+                                                <TableCell className="text-right pr-6">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={() => handleEdit(transaction)}
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                                            onClick={() => handleDeleteClick(transaction.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
             )}

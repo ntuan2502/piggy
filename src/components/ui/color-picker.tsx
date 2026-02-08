@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ export function ColorPicker({ value = "#6366f1", onChange }: ColorPickerProps) {
     const [open, setOpen] = useState(false);
     const [customColor, setCustomColor] = useState(value);
 
-    const handleCustomColorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCustomColorChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const newColor = e.target.value;
         setCustomColor(newColor);
         onChange(newColor);

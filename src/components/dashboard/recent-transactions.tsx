@@ -20,12 +20,13 @@ export function RecentTransactions() {
     if (loading) return <div>{t('common.loading')}</div>;
 
     // Helper to get category
-    const getCategory = (categoryId: string) => {
+    const getCategory = (categoryId?: string) => {
+        if (!categoryId) return undefined;
         return categories.find(c => c.id === categoryId);
     };
 
     // Helper to get category name
-    const getCategoryName = (categoryId: string) => {
+    const getCategoryName = (categoryId?: string) => {
         const category = getCategory(categoryId);
         return category?.name || t('category.unknown');
     };
@@ -59,10 +60,10 @@ export function RecentTransactions() {
                                 {/* Icon - Use category icon or fallback */}
                                 <div
                                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${transaction.isTransfer
-                                            ? 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'
-                                            : isIncome
-                                                ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
-                                                : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
+                                        ? 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800'
+                                        : isIncome
+                                            ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                                            : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
                                         }`}
                                     style={category?.color ? {
                                         backgroundColor: category.color + '15',
