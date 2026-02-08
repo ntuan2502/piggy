@@ -10,6 +10,7 @@ import { addTransfer } from "@/services/transaction.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
     SelectContent,
@@ -114,55 +115,77 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* From Wallet */}
-            <div className="space-y-2">
-                <Label htmlFor="fromWallet">{t("transaction.fromWallet")}</Label>
-                <Select
-                    value={fromWalletId}
-                    onValueChange={(value) => setValue("fromWalletId", value)}
-                >
-                    <SelectTrigger id="fromWallet" className="w-full">
-                        <SelectValue placeholder={t("wallet.select")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {availableFromWallets.map((wallet) => (
-                            <SelectItem key={wallet.id} value={wallet.id}>
-                                {wallet.name} ({formatVNCurrency(wallet.balance)} {wallet.currency})
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                {errors.fromWalletId && (
-                    <p className="text-sm text-red-500">{errors.fromWalletId.message}</p>
-                )}
-            </div>
+            {/* Wallet Selection - Unified Container */}
+            <div className="relative rounded-xl border border-border bg-muted/30 p-4">
+                {/* From Wallet */}
+                <div className="space-y-2">
+                    <Label htmlFor="fromWallet" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {t("transaction.fromWallet")}
+                    </Label>
+                    <Select
+                        value={fromWalletId}
+                        onValueChange={(value) => setValue("fromWalletId", value)}
+                    >
+                        <SelectTrigger id="fromWallet" className="w-full bg-background">
+                            <SelectValue placeholder={t("wallet.select")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableFromWallets.map((wallet) => (
+                                <SelectItem key={wallet.id} value={wallet.id}>
+                                    <span className="truncate">{wallet.name} ({formatVNCurrency(wallet.balance)} {wallet.currency})</span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.fromWalletId && (
+                        <p className="text-xs text-red-500">{errors.fromWalletId.message}</p>
+                    )}
+                </div>
 
-            {/* Transfer Icon */}
-            <div className="flex justify-center">
-                <ArrowRight className="h-6 w-6 text-muted-foreground" />
-            </div>
+                {/* Connector Bridge */}
+                <div className="relative flex items-center justify-center my-4">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-dashed border-border"></div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (fromWalletId || toWalletId) {
+                                const tempFrom = fromWalletId;
+                                setValue("fromWalletId", toWalletId);
+                                setValue("toWalletId", tempFrom);
+                            }
+                        }}
+                        className="relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-border bg-background shadow-sm hover:bg-muted hover:border-primary hover:scale-105 transition-all duration-200 group"
+                    >
+                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary rotate-90" />
+                    </button>
+                </div>
 
-            {/* To Wallet */}
-            <div className="space-y-2">
-                <Label htmlFor="toWallet">{t("transaction.toWallet")}</Label>
-                <Select
-                    value={toWalletId}
-                    onValueChange={(value) => setValue("toWalletId", value)}
-                >
-                    <SelectTrigger id="toWallet" className="w-full">
-                        <SelectValue placeholder={t("wallet.select")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {availableToWallets.map((wallet) => (
-                            <SelectItem key={wallet.id} value={wallet.id}>
-                                {wallet.name} ({formatVNCurrency(wallet.balance)} {wallet.currency})
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                {errors.toWalletId && (
-                    <p className="text-sm text-red-500">{errors.toWalletId.message}</p>
-                )}
+                {/* To Wallet */}
+                <div className="space-y-2">
+                    <Label htmlFor="toWallet" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {t("transaction.toWallet")}
+                    </Label>
+                    <Select
+                        value={toWalletId}
+                        onValueChange={(value) => setValue("toWalletId", value)}
+                    >
+                        <SelectTrigger id="toWallet" className="w-full bg-background">
+                            <SelectValue placeholder={t("wallet.select")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableToWallets.map((wallet) => (
+                                <SelectItem key={wallet.id} value={wallet.id}>
+                                    <span className="truncate">{wallet.name} ({formatVNCurrency(wallet.balance)} {wallet.currency})</span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.toWalletId && (
+                        <p className="text-xs text-red-500">{errors.toWalletId.message}</p>
+                    )}
+                </div>
             </div>
 
             {/* Amount */}
@@ -195,10 +218,10 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
             {/* Note */}
             <div className="space-y-2">
                 <Label htmlFor="note">{t("common.note")} ({t("common.optional")})</Label>
-                <Input
+                <Textarea
                     id="note"
                     {...register("note")}
-                    placeholder={t("transaction.transferNote")}
+                    placeholder={t("common.note") + "..."}
                 />
             </div>
 

@@ -42,7 +42,7 @@ const en = {
     },
     common: {
         actions: "Actions",
-        aiSmartFill: "AI Suggest",
+        aiSmartFill: "AI Auto-Categorize",
         amount: "Amount",
         appName: "Piggy",
         appTagline: "Finance Manager",
@@ -165,6 +165,8 @@ const en = {
         manage: "Manage Transactions",
         noRecent: "No recent transactions",
         noTransactions: "No transactions found",
+        noteAiHint: "💡 Detailed descriptions help AI categorize more accurately",
+        notePlaceholder: "E.g.: Breakfast at coffee shop, grocery shopping...",
         recent: "Recent Transactions",
         search: "Search transactions...",
         searchPlaceholder: "Search by category, wallet, note...",

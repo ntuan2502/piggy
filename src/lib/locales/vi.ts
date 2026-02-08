@@ -42,7 +42,7 @@ const vi = {
     },
     common: {
         actions: "Thao tác",
-        aiSmartFill: "Gợi ý AI",
+        aiSmartFill: "AI Phân loại tự động",
         amount: "Số tiền",
         appName: "Piggy",
         appTagline: "Quản lý tài chính",
@@ -165,6 +165,8 @@ const vi = {
         manage: "Quản lý giao dịch",
         noRecent: "Chưa có giao dịch nào",
         noTransactions: "Không tìm thấy giao dịch nào",
+        noteAiHint: "💡 Mô tả chi tiết giúp AI phân loại chính xác hơn",
+        notePlaceholder: "VD: Ăn phở buổi sáng, mua đồ siêu thị...",
         recent: "Giao dịch gần đây",
         search: "Tìm kiếm giao dịch...",
         searchPlaceholder: "Tìm theo danh mục, ví, ghi chú...",

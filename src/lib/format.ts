@@ -10,6 +10,33 @@ export function formatVNCurrency(amount: number): string {
 }
 
 /**
+ * Format number to compact Vietnamese locale (for large numbers)
+ * Example: 1500000 -> "1,5Tr", 1500000000 -> "1,5T"
+ */
+export function formatCompactVNCurrency(amount: number): string {
+    const absAmount = Math.abs(amount);
+    const sign = amount < 0 ? '-' : '';
+
+    if (absAmount >= 1_000_000_000_000) {
+        // Ngàn tỷ (Quadrillion in VN context)
+        return sign + (absAmount / 1_000_000_000_000).toFixed(1).replace('.', ',') + 'NT';
+    }
+    if (absAmount >= 1_000_000_000) {
+        // Tỷ (Billion)
+        return sign + (absAmount / 1_000_000_000).toFixed(1).replace('.', ',') + 'T';
+    }
+    if (absAmount >= 1_000_000) {
+        // Triệu (Million)
+        return sign + (absAmount / 1_000_000).toFixed(1).replace('.', ',') + 'Tr';
+    }
+    if (absAmount >= 1_000) {
+        // Nghìn (Thousand)
+        return sign + (absAmount / 1_000).toFixed(1).replace('.', ',') + 'K';
+    }
+    return formatVNCurrency(amount);
+}
+
+/**
  * Parse Vietnamese formatted number to number
  * Example: "1.000.000,50" -> 1000000.5
  */

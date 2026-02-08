@@ -49,6 +49,7 @@ export function TransactionForm({
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<string>(transaction?.type || "expense");
     const [isAiLoading, setIsAiLoading] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
 
 
 
@@ -83,6 +84,15 @@ export function TransactionForm({
     // Set default wallet
     const { setValue } = form;
     const walletId = useWatch({ control: form.control, name: "walletId" });
+    const note = useWatch({ control: form.control, name: "note" });
+
+    // Cooldown timer effect
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cooldown]);
 
     useEffect(() => {
         if (profile?.defaultWalletId && !walletId) {
@@ -145,6 +155,7 @@ export function TransactionForm({
             console.error("AI Suggestion Failed", error);
         } finally {
             setIsAiLoading(false);
+            setCooldown(10); // Start 10s cooldown
         }
     };
 
@@ -378,10 +389,11 @@ export function TransactionForm({
                         name="note"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>{t('common.note')}</FormLabel>
+                                <FormLabel>{t('common.note')} ({t('common.optional')})</FormLabel>
                                 <FormControl>
-                                    <Textarea placeholder={t('common.note') + "..."} {...field} />
+                                    <Textarea placeholder={t('transaction.notePlaceholder')} {...field} />
                                 </FormControl>
+                                <p className="text-xs text-muted-foreground">{t('transaction.noteAiHint')}</p>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -395,11 +407,12 @@ export function TransactionForm({
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleAiSuggest}
-                                disabled={isAiLoading}
-                                className="text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950"
+                                disabled={isAiLoading || !note || cooldown > 0}
+                                className="text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 disabled:opacity-50"
                             >
                                 {isAiLoading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
                                 {t('common.aiSmartFill')}
+                                {cooldown > 0 && <span className="ml-1 text-[10px] opacity-70">({cooldown}s)</span>}
                             </Button>
                         </div>
                     )}
