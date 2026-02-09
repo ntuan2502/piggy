@@ -23,7 +23,7 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
     const { t } = useTranslation();
     const chartConfig = {
         amount: {
-            label: "Amount",
+            label: t('common.amount'),
         },
         // We would dynamic generate config for colors if strictly following shadcn pattern
         // For now we pass fill color in data

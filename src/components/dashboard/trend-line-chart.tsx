@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTranslation } from "react-i18next"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { formatVNCurrency } from "@/lib/format"
+import { format } from "date-fns"
+import { vi, enUS } from "date-fns/locale"
 
 interface TrendData {
     date: string;
@@ -12,7 +14,9 @@ interface TrendData {
 }
 
 export function TrendLineChart({ data }: { data: TrendData[] }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const locale = i18n.language === 'vi' ? vi : enUS;
+
     const chartConfig = {
         income: { label: t('transaction.income'), color: "#22c55e" },
         expense: { label: t('transaction.expense'), color: "#ef4444" },
@@ -46,7 +50,7 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                             tickFormatter={(value) => {
                                 try {
                                     const date = new Date(value);
-                                    return date.toLocaleDateString("vi-VN", { month: "numeric", day: "numeric" });
+                                    return format(date, "dd/MM", { locale });
                                 } catch {
                                     return value;
                                 }

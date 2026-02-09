@@ -7,35 +7,48 @@ import { cn } from "@/lib/utils";
 
 export function StatsCards({ income, expense, net, className }: { income: number, expense: number, net: number, className?: string }) {
     const { t } = useTranslation();
+
     return (
         <div className={cn("grid gap-4 grid-cols-1 md:grid-cols-3", className)}>
-            <Card>
+            {/* Income Card */}
+            <Card className="border-none bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{t('transaction.income')}</CardTitle>
-                    <ArrowUpIcon className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-green-600">{formatVNCurrency(income)}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{t('transaction.expense')}</CardTitle>
-                    <ArrowDownIcon className="h-4 w-4 text-red-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-red-600">{formatVNCurrency(expense)}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{t('wallet.netWorth')}</CardTitle>
-                    <Wallet className={cn("h-4 w-4", net >= 0 ? "text-blue-500" : "text-red-500")} />
-                </CardHeader>
-                <CardContent>
-                    <div className={cn("text-2xl font-bold", net >= 0 ? "text-blue-600" : "text-red-600")}>
-                        {formatVNCurrency(net)}
+                    <CardTitle className="text-sm font-medium text-emerald-100">{t('transaction.income')}</CardTitle>
+                    <div className="rounded-full bg-white/20 p-2">
+                        <ArrowUpIcon className="h-4 w-4 text-white" />
                     </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatVNCurrency(income)}</div>
+                    {/* <p className="text-xs text-emerald-100 mt-1 opacity-80">+12% {t('report.fromLastMonth')}</p> */}
+                </CardContent>
+            </Card>
+
+            {/* Expense Card */}
+            <Card className="border-none bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/20">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-red-100">{t('transaction.expense')}</CardTitle>
+                    <div className="rounded-full bg-white/20 p-2">
+                        <ArrowDownIcon className="h-4 w-4 text-white" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatVNCurrency(expense)}</div>
+                    {/* <p className="text-xs text-red-100 mt-1 opacity-80">-4% {t('report.fromLastMonth')}</p> */}
+                </CardContent>
+            </Card>
+
+            {/* Net Worth Card */}
+            <Card className="border-none bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-blue-100">{t('wallet.netWorth')}</CardTitle>
+                    <div className="rounded-full bg-white/20 p-2">
+                        <Wallet className="h-4 w-4 text-white" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatVNCurrency(net)}</div>
+                    <p className="text-xs text-blue-100 mt-1 opacity-80">{t('report.availableBalance')}</p>
                 </CardContent>
             </Card>
         </div>

@@ -32,7 +32,7 @@ export function AppSidebar() {
 
     const handleLogout = async () => {
         await auth.signOut();
-        router.push("/login");
+        router.push("/");
     };
 
     const handleNavigation = () => {
@@ -51,24 +51,24 @@ export function AppSidebar() {
     const navItems = [
         { href: "/dashboard", icon: LayoutDashboard, label: t('common.dashboard') },
         { href: "/wallets", icon: Wallet, label: t('wallet.title') },
-        { href: "/transactions", icon: Receipt, label: t('transaction.allTransactions') },
+        { href: "/transactions", icon: Receipt, label: t('transaction.book') },
         { href: "/reports", icon: PieChart, label: t('report.title') },
         { href: "/settings", icon: Settings, label: t('settings.title') },
     ];
 
     return (
-        <Sidebar collapsible="icon">
-            <SidebarHeader>
+        <Sidebar collapsible="icon" className="border-r-0 bg-sidebar/50 backdrop-blur-xl">
+            <SidebarHeader className="pb-4 pt-6">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild onClick={handleNavigation}>
+                        <SidebarMenuButton size="lg" asChild onClick={handleNavigation} className="hover:bg-transparent data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                             <Link href="/">
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-green-600 text-white">
-                                    <span className="text-lg font-bold">P</span>
+                                <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+                                    <span className="text-xl font-bold">P</span>
                                 </div>
-                                <div className="flex flex-col gap-0.5 leading-none">
-                                    <span className="font-semibold">{t('common.appName')}</span>
-                                    <span className="text-xs text-muted-foreground">{t('common.appTagline')}</span>
+                                <div className="flex flex-col gap-1 leading-none ml-1">
+                                    <span className="font-bold text-lg tracking-tight">{t('common.appName')}</span>
+                                    <span className="text-xs font-medium text-muted-foreground">{t('common.appTagline')}</span>
                                 </div>
                             </Link>
                         </SidebarMenuButton>
@@ -76,10 +76,10 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent className="px-2">
                 <SidebarGroup>
                     <SidebarGroupContent>
-                        <SidebarMenu>
+                        <SidebarMenu className="gap-2">
                             {navItems.map((item) => (
                                 <SidebarMenuItem key={item.href}>
                                     <SidebarMenuButton
@@ -87,9 +87,10 @@ export function AppSidebar() {
                                         isActive={pathname === item.href}
                                         tooltip={item.label}
                                         onClick={handleNavigation}
+                                        className="h-10 rounded-lg px-3 transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md data-[active=true]:shadow-emerald-500/20"
                                     >
-                                        <Link href={item.href}>
-                                            <item.icon />
+                                        <Link href={item.href} className="flex items-center gap-3 font-medium">
+                                            <item.icon className="size-5" />
                                             <span>{item.label}</span>
                                         </Link>
                                     </SidebarMenuButton>
@@ -100,25 +101,25 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter>
+            <SidebarFooter className="p-4">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton size="lg">
-                                    <Avatar className="h-8 w-8">
+                                <SidebarMenuButton size="lg" className="rounded-xl border border-sidebar-border bg-sidebar hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                                    <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
                                         {user?.photoURL && (
                                             <AvatarImage src={user.photoURL} alt="Avatar" className="object-cover" />
                                         )}
-                                        <AvatarFallback className="bg-green-600 text-white">
+                                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
                                             {getUserInitials()}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <div className="flex flex-col gap-0.5 leading-none">
-                                        <span className="font-semibold text-sm">{user?.displayName || t('common.user')}</span>
-                                        <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+                                    <div className="flex flex-col gap-1 leading-none text-left">
+                                        <span className="font-semibold text-sm truncate">{user?.displayName || t('common.user')}</span>
+                                        <span className="text-xs text-muted-foreground truncate opacity-70">{user?.email}</span>
                                     </div>
-                                    <ChevronUp className="ml-auto" />
+                                    <ChevronUp className="ml-auto size-4 text-muted-foreground" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
