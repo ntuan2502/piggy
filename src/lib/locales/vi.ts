@@ -43,6 +43,7 @@ const vi = {
     common: {
         actions: "Thao tác",
         aiSmartFill: "AI Phân loại tự động",
+        autoCategorize: "Tự động phân loại",
         amount: "Số tiền",
         appName: "Piggy",
         appTagline: "Quản lý tài chính",
@@ -59,6 +60,7 @@ const vi = {
         lastMonth: "Tháng trước",
         loading: "Đang tải...",
         logout: "Đăng xuất",
+        month: "Tháng",
         name: "Tên",
         noData: "Chưa có dữ liệu",
         none: "Không có",
@@ -67,6 +69,7 @@ const vi = {
         optional: "Tùy chọn",
         out: "Chi ra",
         pickDate: "Chọn ngày",
+        quarter: "Quý",
         quickSelect: "Chọn nhanh",
         save: "Lưu",
         saving: "Đang lưu...",
@@ -79,6 +82,7 @@ const vi = {
         total: "Tổng cộng",
         toggleSidebar: "Ẩn/Hiện thanh bên",
         user: "Người dùng",
+        year: "Năm",
         yesterday: "Hôm qua"
     },
     landing: {

@@ -43,6 +43,7 @@ const en = {
     common: {
         actions: "Actions",
         aiSmartFill: "AI Auto-Categorize",
+        autoCategorize: "Auto Categorize",
         amount: "Amount",
         appName: "Piggy",
         appTagline: "Finance Manager",
@@ -59,6 +60,7 @@ const en = {
         lastMonth: "Last Month",
         loading: "Loading...",
         logout: "Logout",
+        month: "Month",
         name: "Name",
         noData: "No data available",
         none: "None",
@@ -67,6 +69,7 @@ const en = {
         optional: "Optional",
         out: "Out",
         pickDate: "Pick a date",
+        quarter: "Quarter",
         quickSelect: "Quick Select",
         save: "Save",
         saving: "Saving...",
@@ -79,6 +82,7 @@ const en = {
         total: "Total",
         toggleSidebar: "Toggle Sidebar",
         user: "User",
+        year: "Year",
         yesterday: "Yesterday"
     },
     landing: {
