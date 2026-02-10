@@ -10,7 +10,6 @@ import {
     ChevronLeft,
     ChevronRight,
     Loader2,
-    Receipt,
     ListFilter
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths, isToday, isYesterday, startOfDay } from "date-fns";
@@ -362,55 +361,43 @@ export default function TransactionsPage() {
 
     return (
         <div className="space-y-4">
-            {/* Header Area - Consolidated */}
-            <div className="flex flex-col gap-4 sticky top-0 bg-background/95 backdrop-blur z-10 py-2 border-b">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Receipt className="h-6 w-6 text-primary" />
-                        <h1 className="text-xl font-bold tracking-tight">{t('transaction.book')}</h1>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                        {uncategorizedTransactions.length > 0 && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleAutoCategorize}
-                                disabled={isAutoCategorizing}
-                                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                            >
-                                {isAutoCategorizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                <span className="sr-only sm:not-sr-only sm:ml-2">Auto ({uncategorizedTransactions.length})</span>
-                            </Button>
-                        )}
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-end gap-1">
+                    {uncategorizedTransactions.length > 0 && (
                         <Button
                             variant="ghost"
-                            size="icon"
-                            onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={cn(hasActiveFilters && "text-primary bg-primary/10")}
+                            size="sm"
+                            onClick={handleAutoCategorize}
+                            disabled={isAutoCategorizing}
                         >
-                            <ListFilter className="h-5 w-5" />
+                            {isAutoCategorizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                            <span className="sr-only sm:not-sr-only sm:ml-2">Auto ({uncategorizedTransactions.length})</span>
                         </Button>
-                    </div>
+                    )}
+                    <Button
+                        variant={hasActiveFilters ? "secondary" : "ghost"}
+                        size="icon"
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    >
+                        <ListFilter className="h-4 w-4" />
+                    </Button>
                 </div>
 
                 {/* Month Navigator & Totals */}
-                <div className="flex items-center justify-between bg-muted/40 rounded-lg p-1">
-                    <Button variant="ghost" size="icon" onClick={handlePreviousMonth} className="h-8 w-8">
+                <div className="flex items-center justify-between rounded-lg border p-1">
+                    <Button variant="ghost" size="icon" onClick={handlePreviousMonth}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
 
                     <div className="flex flex-col items-center">
                         <span className="text-sm font-medium capitalize">{formatMonthYear(selectedMonth)}</span>
-                        <span className={cn(
-                            "text-xs font-bold",
-                            monthStats.total >= 0 ? "text-green-600" : "text-red-600"
-                        )}>
+                        <span className="text-xs font-semibold text-muted-foreground">
                             {monthStats.total > 0 ? "+" : ""}{formatVNCurrency(monthStats.total)}
                         </span>
                     </div>
 
-                    <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-8 w-8">
+                    <Button variant="ghost" size="icon" onClick={handleNextMonth}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
@@ -490,22 +477,22 @@ export default function TransactionsPage() {
                         : t('transaction.noRecent')}
                 </div>
             ) : (
-                <div className="space-y-3 pb-20">
+                <div className="space-y-3">
                     {groupedTransactions.map((group) => (
-                        <div key={group.date.toISOString()} className="bg-card/50 rounded-xl border-b last:border-0 sm:border sm:shadow-sm overflow-hidden">
-                            {/* Date Header - Simplified */}
-                            <div className="bg-muted/30 px-4 py-2 flex items-center justify-between">
+                        <div key={group.date.toISOString()} className="rounded-lg border overflow-hidden">
+                            {/* Date Header */}
+                            <div className="bg-muted px-4 py-2 flex items-center justify-between">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-xl font-bold">{format(group.date, 'dd')}</span>
-                                    <span className="text-sm font-medium text-muted-foreground uppercase">{getDayLabel(group.date)}</span>
+                                    <span className="text-lg font-bold">{format(group.date, 'dd')}</span>
+                                    <span className="text-sm text-muted-foreground">{getDayLabel(group.date)}</span>
                                 </div>
-                                <div className={cn("text-sm font-bold", group.totalLogin >= 0 ? "text-green-600" : "text-red-500")}>
+                                <span className="text-sm font-semibold text-muted-foreground">
                                     {formatVNCurrency(group.totalLogin)}
-                                </div>
+                                </span>
                             </div>
 
-                            {/* Transactions Details */}
-                            <div className="divide-y divide-border/50">
+                            {/* Transactions */}
+                            <div className="divide-y">
                                 {group.transactions.map((transaction) => {
                                     const category = getCategory(transaction.categoryId);
                                     const isIncome = transaction.type === 'income' || transaction.type === 'debt';
@@ -513,28 +500,19 @@ export default function TransactionsPage() {
                                     return (
                                         <div
                                             key={transaction.id}
-                                            className="px-4 py-3 flex items-center justify-between hover:bg-accent/50 transition-colors cursor-pointer group"
+                                            className="px-4 py-3 flex items-center justify-between hover:bg-accent cursor-pointer group"
                                             onClick={() => handleEdit(transaction)}
                                         >
-                                            <div className="flex items-center gap-3 overflow-hidden">
-                                                <div
-                                                    className={cn(
-                                                        "flex items-center justify-center w-9 h-9 rounded-full shrink-0 border",
-                                                        isIncome ? "bg-green-500/10 border-green-500/20" : "bg-red-500/10 border-red-500/20"
-                                                    )}
-                                                    style={category?.color ? {
-                                                        backgroundColor: category.color + '15',
-                                                        borderColor: category.color + '30'
-                                                    } : undefined}
-                                                >
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="flex items-center justify-center size-9 rounded-full shrink-0 bg-muted">
                                                     {category?.icon ? (
                                                         <CategoryIcon iconName={category.icon} color={category.color} className="h-4 w-4" />
                                                     ) : (
-                                                        <span className="text-[10px] font-bold">{category?.name?.[0] || "?"}</span>
+                                                        <span className="text-xs font-semibold">{category?.name?.[0] || "?"}</span>
                                                     )}
                                                 </div>
                                                 <div className="min-w-0 flex flex-col">
-                                                    <span className="font-medium text-sm truncate">{category?.name || t('category.unknown')}</span>
+                                                    <span className="text-sm font-medium truncate">{category?.name || t('category.unknown')}</span>
                                                     {transaction.note && (
                                                         <span className="text-xs text-muted-foreground truncate">{transaction.note}</span>
                                                     )}
@@ -543,15 +521,15 @@ export default function TransactionsPage() {
 
                                             <div className="flex flex-col items-end">
                                                 <span className={cn(
-                                                    "font-bold text-sm",
+                                                    "text-sm font-semibold",
                                                     getTypeColor(transaction.type)
                                                 )}>
                                                     {isIncome ? '+' : '-'}
                                                     {formatVNCurrency(transaction.amount)}
                                                 </span>
-                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100">
                                                     <button
-                                                        className="text-xs text-red-500 hover:underline"
+                                                        className="text-xs text-destructive hover:underline"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleDeleteClick(transaction.id);
@@ -606,7 +584,7 @@ export default function TransactionsPage() {
                         <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDeleteConfirm}
-                            className="bg-red-500 hover:bg-red-600"
+                            variant="destructive"
                         >
                             {t('common.delete')}
                         </AlertDialogAction>
