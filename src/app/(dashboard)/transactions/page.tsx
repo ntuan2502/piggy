@@ -164,9 +164,12 @@ export default function TransactionsPage() {
         setIsAutoCategorizing(true);
         let successCount = 0;
         const total = uncategorizedTransactions.length;
-        const BATCH_SIZE = 20;
+        // Gemini 2.5 Flash Lite limits: RPM=10, TPM=250K, RPD=20
+        // Use large batches to minimize API calls and preserve daily quota (RPD)
+        const BATCH_SIZE = 200;
+        const DELAY_MS = 7000; // 7s delay between batches to respect 10 req/min
 
-        toast.info(t('transaction.categorizingStarted', { count: total }));
+        const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
         try {
             const chunks = [];
@@ -174,7 +177,12 @@ export default function TransactionsPage() {
                 chunks.push(uncategorizedTransactions.slice(i, i + BATCH_SIZE));
             }
 
-            for (const chunk of chunks) {
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+
+                // Show progress
+                toast.info(t('transaction.categorizingBatch', { current: i + 1, total: chunks.length }));
+
                 const payload = {
                     transactions: chunk.map(tx => ({
                         id: tx.id,
@@ -215,6 +223,11 @@ export default function TransactionsPage() {
                             }
                         }));
                     }
+                }
+
+                // Add delay if not the last chunk
+                if (i < chunks.length - 1) {
+                    await delay(DELAY_MS);
                 }
             }
 
@@ -705,7 +718,7 @@ export default function TransactionsPage() {
                     )}
                 </div>
             ) : (
-                <div className="space-y-4 pb-12">
+                <div className="space-y-4">
                     {groupedTransactions.map((group) => (
                         <div key={group.key} className="rounded-lg border bg-card shadow-sm overflow-hidden">
                             {/* Group Header */}
