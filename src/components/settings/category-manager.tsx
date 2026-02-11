@@ -74,47 +74,82 @@ function SortableCategoryItem({
         transition,
     };
 
+    if (isParent) {
+        return (
+            <div
+                ref={setNodeRef}
+                style={style}
+                className={cn(
+                    "rounded-lg border bg-card shadow-sm overflow-hidden",
+                    isDragging && "opacity-50 ring-2 ring-primary"
+                )}
+            >
+                {/* Parent Header */}
+                <div
+                    className="flex items-center justify-between px-3 py-2.5 border-l-4"
+                    style={{ borderLeftColor: category.color || "#6366f1" }}
+                >
+                    <div className="flex items-center gap-2">
+                        <button
+                            className="cursor-grab hover:bg-accent rounded p-0.5 touch-none"
+                            {...attributes}
+                            {...listeners}
+                        >
+                            <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                        <CategoryIcon iconName={category.icon} color={category.color} />
+                        <span className="font-medium text-sm">{category.name}</span>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(category)}>
+                            <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                            variant="ghost" size="icon"
+                            className="h-7 w-7 text-red-500 hover:text-red-600"
+                            onClick={() => onDelete(category.id)}
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                    </div>
+                </div>
+                {/* Children rendered inside */}
+                {children}
+            </div>
+        );
+    }
+
+    // Child item - compact inline style
     return (
         <div
             ref={setNodeRef}
             style={style}
             className={cn(
-                isParent ? "border rounded-lg p-3" : "flex items-center justify-between text-sm py-1",
-                isDragging && "opacity-50 bg-accent"
+                "inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs",
+                isDragging && "opacity-50 ring-2 ring-primary"
             )}
         >
-            <div className={cn("flex items-center justify-between", isParent && "font-medium")}>
-                <div className="flex items-center gap-2">
-                    <button
-                        className="cursor-grab hover:bg-accent rounded p-1 touch-none"
-                        {...attributes}
-                        {...listeners}
-                    >
-                        <GripVertical className={cn("text-muted-foreground", isParent ? "w-4 h-4" : "w-3 h-3")} />
-                    </button>
-                    <CategoryIcon iconName={category.icon} color={category.color} />
-                    <span>{category.name}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className={isParent ? "" : "h-6 w-6"}
-                        onClick={() => onEdit(category)}
-                    >
-                        <Pencil className={isParent ? "w-4 h-4" : "w-3 h-3"} />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("text-red-500 hover:text-red-600", isParent ? "" : "h-6 w-6")}
-                        onClick={() => onDelete(category.id)}
-                    >
-                        <Trash2 className={isParent ? "w-4 h-4" : "w-3 h-3"} />
-                    </Button>
-                </div>
-            </div>
-            {children}
+            <button
+                className="cursor-grab hover:bg-accent rounded touch-none"
+                {...attributes}
+                {...listeners}
+            >
+                <GripVertical className="w-3 h-3 text-muted-foreground" />
+            </button>
+            <CategoryIcon iconName={category.icon} color={category.color} className="w-3.5 h-3.5" />
+            <span>{category.name}</span>
+            <button
+                className="ml-0.5 hover:text-foreground text-muted-foreground"
+                onClick={() => onEdit(category)}
+            >
+                <Pencil className="w-2.5 h-2.5" />
+            </button>
+            <button
+                className="hover:text-red-600 text-red-400"
+                onClick={() => onDelete(category.id)}
+            >
+                <Trash2 className="w-2.5 h-2.5" />
+            </button>
         </div>
     );
 }
@@ -260,22 +295,24 @@ export function CategoryManager() {
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">{t('category.management')}</h3>
-                <div className="flex gap-2">
+        <div className="space-y-3">
+            <Tabs defaultValue="expense" onValueChange={setActiveTab}>
+                <div className="sticky top-0 bg-background/95 backdrop-blur z-20 flex items-center gap-2 mb-4 py-2 -mx-4 px-4 border-b">
+                    <TabsList className="grid grid-cols-2 flex-1">
+                        <TabsTrigger value="expense">{t('transaction.expense')}</TabsTrigger>
+                        <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
+                    </TabsList>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span className="inline-block" tabIndex={0}>
                                 <Button
                                     variant="outline"
-                                    size="sm"
+                                    size="icon"
+                                    className={cn("h-9 w-9", categories.length > 0 && "pointer-events-none opacity-50")}
                                     onClick={() => setResetConfirmOpen(true)}
                                     disabled={categories.length > 0}
-                                    className={categories.length > 0 ? "pointer-events-none opacity-50" : ""}
                                 >
-                                    <RotateCcw className="w-4 h-4 mr-2" />
-                                    {t('category.reset')}
+                                    <RotateCcw className="w-4 h-4" />
                                 </Button>
                             </span>
                         </TooltipTrigger>
@@ -283,18 +320,10 @@ export function CategoryManager() {
                             <p>{categories.length > 0 ? t('category.resetDisabledHelp') : t('category.reset')}</p>
                         </TooltipContent>
                     </Tooltip>
-                    <Button size="sm" onClick={handleAdd}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        {t('category.add')}
+                    <Button size="icon" className="h-9 w-9" onClick={handleAdd}>
+                        <Plus className="w-4 h-4" />
                     </Button>
                 </div>
-            </div>
-
-            <Tabs defaultValue="expense" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                    <TabsTrigger value="expense">{t('transaction.expense')}</TabsTrigger>
-                    <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
-                </TabsList>
 
                 <DndContext
                     sensors={sensors}
@@ -305,7 +334,7 @@ export function CategoryManager() {
                         items={rootCategories.map(c => c.id)}
                         strategy={verticalListSortingStrategy}
                     >
-                        <div className="space-y-3">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                             {rootCategories.map(root => {
                                 const children = getChildren(root.id);
                                 return (
@@ -316,7 +345,7 @@ export function CategoryManager() {
                                         onDelete={handleDeleteClick}
                                         isParent
                                     >
-                                        {/* Children with their own DnD context */}
+                                        {/* Children as flex-wrap chips */}
                                         {children.length > 0 && (
                                             <DndContext
                                                 sensors={sensors}
@@ -327,7 +356,7 @@ export function CategoryManager() {
                                                     items={children.map(c => c.id)}
                                                     strategy={verticalListSortingStrategy}
                                                 >
-                                                    <div className="ml-6 mt-2 space-y-1 border-l pl-4">
+                                                    <div className="flex flex-wrap gap-1.5 px-3 pb-2.5">
                                                         {children.map(child => (
                                                             <SortableCategoryItem
                                                                 key={child.id}

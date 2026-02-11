@@ -2,7 +2,6 @@
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import ProtectedRoute from "@/components/layout/protected-route";
-import { MigrationModal } from "@/components/migration-modal";
 import { WalletInitializer } from "@/components/wallet-initializer";
 import { SettingsSync } from "@/components/settings-sync";
 import {
@@ -31,7 +30,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <ProtectedRoute>
             <WalletInitializer />
             <SettingsSync />
-            <MigrationModal />
+
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
