@@ -6,7 +6,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { addCategory, updateCategory, deleteCategory, resetCategories } from "@/services/category.service";
 import { toast } from "sonner";
 import { Category, TransactionType } from "@/types";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -261,102 +260,99 @@ export function CategoryManager() {
     };
 
     return (
-        <div>
-            <Card>
-                <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <CardTitle>{t('category.management')}</CardTitle>
-                    <div className="flex gap-2">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-block" tabIndex={0}>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setResetConfirmOpen(true)}
-                                        disabled={categories.length > 0}
-                                        className={categories.length > 0 ? "pointer-events-none opacity-50" : ""}
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{t('category.management')}</h3>
+                <div className="flex gap-2">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="inline-block" tabIndex={0}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setResetConfirmOpen(true)}
+                                    disabled={categories.length > 0}
+                                    className={categories.length > 0 ? "pointer-events-none opacity-50" : ""}
+                                >
+                                    <RotateCcw className="w-4 h-4 mr-2" />
+                                    {t('category.reset')}
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{categories.length > 0 ? t('category.resetDisabledHelp') : t('category.reset')}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <Button size="sm" onClick={handleAdd}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        {t('category.add')}
+                    </Button>
+                </div>
+            </div>
+
+            <Tabs defaultValue="expense" onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="expense">{t('transaction.expense')}</TabsTrigger>
+                    <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
+                </TabsList>
+
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(e) => handleDragEnd(e, null)}
+                >
+                    <SortableContext
+                        items={rootCategories.map(c => c.id)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <div className="space-y-3">
+                            {rootCategories.map(root => {
+                                const children = getChildren(root.id);
+                                return (
+                                    <SortableCategoryItem
+                                        key={root.id}
+                                        category={root}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDeleteClick}
+                                        isParent
                                     >
-                                        <RotateCcw className="w-4 h-4 mr-2" />
-                                        {t('category.reset')}
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>{categories.length > 0 ? t('category.resetDisabledHelp') : t('category.reset')}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Button size="sm" onClick={handleAdd}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            {t('category.add')}
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Tabs defaultValue="expense" onValueChange={setActiveTab}>
-                        <TabsList className="grid w-full grid-cols-2 mb-4">
-                            <TabsTrigger value="expense">{t('transaction.expense')}</TabsTrigger>
-                            <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
-                        </TabsList>
-
-                        <DndContext
-                            sensors={sensors}
-                            collisionDetection={closestCenter}
-                            onDragEnd={(e) => handleDragEnd(e, null)}
-                        >
-                            <SortableContext
-                                items={rootCategories.map(c => c.id)}
-                                strategy={verticalListSortingStrategy}
-                            >
-                                <div className="space-y-4">
-                                    {rootCategories.map(root => {
-                                        const children = getChildren(root.id);
-                                        return (
-                                            <SortableCategoryItem
-                                                key={root.id}
-                                                category={root}
-                                                onEdit={handleEdit}
-                                                onDelete={handleDeleteClick}
-                                                isParent
+                                        {/* Children with their own DnD context */}
+                                        {children.length > 0 && (
+                                            <DndContext
+                                                sensors={sensors}
+                                                collisionDetection={closestCenter}
+                                                onDragEnd={(e) => handleDragEnd(e, root.id)}
                                             >
-                                                {/* Children with their own DnD context */}
-                                                {children.length > 0 && (
-                                                    <DndContext
-                                                        sensors={sensors}
-                                                        collisionDetection={closestCenter}
-                                                        onDragEnd={(e) => handleDragEnd(e, root.id)}
-                                                    >
-                                                        <SortableContext
-                                                            items={children.map(c => c.id)}
-                                                            strategy={verticalListSortingStrategy}
-                                                        >
-                                                            <div className="ml-6 mt-2 space-y-1 border-l pl-4">
-                                                                {children.map(child => (
-                                                                    <SortableCategoryItem
-                                                                        key={child.id}
-                                                                        category={child}
-                                                                        onEdit={handleEdit}
-                                                                        onDelete={handleDeleteClick}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        </SortableContext>
-                                                    </DndContext>
-                                                )}
-                                            </SortableCategoryItem>
-                                        );
-                                    })}
-                                </div>
-                            </SortableContext>
-                        </DndContext>
+                                                <SortableContext
+                                                    items={children.map(c => c.id)}
+                                                    strategy={verticalListSortingStrategy}
+                                                >
+                                                    <div className="ml-6 mt-2 space-y-1 border-l pl-4">
+                                                        {children.map(child => (
+                                                            <SortableCategoryItem
+                                                                key={child.id}
+                                                                category={child}
+                                                                onEdit={handleEdit}
+                                                                onDelete={handleDeleteClick}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </SortableContext>
+                                            </DndContext>
+                                        )}
+                                    </SortableCategoryItem>
+                                );
+                            })}
+                        </div>
+                    </SortableContext>
+                </DndContext>
 
-                        {rootCategories.length === 0 && (
-                            <p className="text-center text-muted-foreground py-8">
-                                {t('category.none')}
-                            </p>
-                        )}
-                    </Tabs>
-                </CardContent>
-            </Card>
+                {rootCategories.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                        {t('category.none')}
+                    </p>
+                )}
+            </Tabs>
 
             <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
                 <AlertDialogContent>
