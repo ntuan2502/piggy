@@ -3,18 +3,13 @@ import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CategoryManager } from "@/components/settings/category-manager";
 import { UserPreferences } from "@/components/settings/user-preferences";
-import { Settings as SettingsIcon, FolderTree, User } from "lucide-react";
+import { FolderTree, User } from "lucide-react";
 
 export default function SettingsPage() {
     const { t } = useTranslation();
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-2">
-                <SettingsIcon className="h-8 w-8" />
-                <h2 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h2>
-            </div>
-
+        <div className="space-y-4">
             <Tabs defaultValue="preferences" className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="preferences" className="gap-2">

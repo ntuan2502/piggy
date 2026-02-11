@@ -4,37 +4,10 @@ import { useState, useMemo } from "react";
 import { icons } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { ChevronDown } from "lucide-react";
 
-// Curated list of common icons for categories
-const CATEGORY_ICONS = [
-    // Food & Drinks
-    "Utensils", "Coffee", "Pizza", "Apple", "Beef", "Cake", "Cookie", "IceCream", "Wine", "Beer",
-    // Shopping
-    "ShoppingBag", "ShoppingCart", "Gift", "Shirt", "Watch", "Gem", "Glasses",
-    // Transportation
-    "Car", "Bus", "Train", "Plane", "Bike", "Ship", "Fuel",
-    // Home & Living
-    "Home", "Bed", "Sofa", "Lamp", "Tv", "Refrigerator", "WashingMachine",
-    // Health & Fitness
-    "Heart", "Pill", "Stethoscope", "Dumbbell", "Activity",
-    // Entertainment
-    "Music", "Film", "Gamepad2", "Ticket", "PartyPopper", "Sparkles",
-    // Work & Education
-    "Briefcase", "Building2", "GraduationCap", "BookOpen", "Laptop", "Smartphone",
-    // Finance
-    "Wallet", "CreditCard", "Banknote", "PiggyBank", "TrendingUp", "TrendingDown", "Receipt",
-    // Utilities
-    "Lightbulb", "Droplets", "Flame", "Wifi", "Phone",
-    // Travel
-    "MapPin", "Globe", "Palmtree", "Mountain", "Tent", "Camera",
-    // Other
-    "Star", "CircleDollarSign", "HandCoins", "Coins", "BadgeDollarSign", "ReceiptText",
-    "Users", "Baby", "Dog", "Cat", "Scissors", "Wrench", "Paintbrush",
-    "Circle", "Square", "Triangle", "Hexagon", "Bookmark", "Tag", "Flag"
-];
 
 interface IconPickerProps {
     value?: string;
@@ -49,68 +22,80 @@ export function IconPicker({ value = "Circle", onChange, color = "#6366f1" }: Ic
 
     const ValidIcons = icons as unknown as Record<string, typeof icons.Circle>;
 
+    const allIconNames = useMemo(() => Object.keys(ValidIcons), [ValidIcons]);
+
     const filteredIcons = useMemo(() => {
-        if (!search) return CATEGORY_ICONS;
-        return CATEGORY_ICONS.filter(icon =>
+        if (!search) return allIconNames;
+        return allIconNames.filter(icon =>
             icon.toLowerCase().includes(search.toLowerCase())
         );
-    }, [search]);
+    }, [search, allIconNames]);
 
     const SelectedIcon = ValidIcons[value] || ValidIcons.Circle;
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    className="w-full justify-start gap-2"
-                    type="button"
-                >
+        <div className="space-y-2">
+            {/* Trigger Button */}
+            <Button
+                variant="outline"
+                className="w-full justify-between gap-2"
+                type="button"
+                onClick={() => setOpen(!open)}
+            >
+                <div className="flex items-center gap-2">
                     <div
-                        className="flex items-center justify-center w-8 h-8 rounded-lg"
+                        className="flex items-center justify-center w-7 h-7 rounded-md"
                         style={{ backgroundColor: color + "20" }}
                     >
-                        <SelectedIcon className="w-5 h-5" style={{ color }} />
+                        <SelectedIcon className="w-4 h-4" style={{ color }} />
                     </div>
                     <span className="text-muted-foreground">{value}</span>
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-3" align="start">
-                <Input
-                    placeholder={t('common.search')}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="mb-3"
-                />
-                <div className="grid grid-cols-8 gap-1 max-h-[300px] overflow-y-auto">
-                    {filteredIcons.map((iconName) => {
-                        const Icon = ValidIcons[iconName];
-                        if (!Icon) return null;
-                        return (
-                            <button
-                                key={iconName}
-                                type="button"
-                                onClick={() => {
-                                    onChange(iconName);
-                                    setOpen(false);
-                                }}
-                                className={cn(
-                                    "flex items-center justify-center w-8 h-8 rounded-lg hover:bg-accent transition-colors",
-                                    value === iconName && "bg-accent ring-2 ring-primary"
-                                )}
-                                title={iconName}
-                            >
-                                <Icon className="w-4 h-4" style={{ color: value === iconName ? color : undefined }} />
-                            </button>
-                        );
-                    })}
                 </div>
-                {filteredIcons.length === 0 && (
-                    <p className="text-center text-sm text-muted-foreground py-4">
-                        No icons found
-                    </p>
-                )}
-            </PopoverContent>
-        </Popover>
+                <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+            </Button>
+
+            {/* Inline Icon Grid (Collapsible) */}
+            {open && (
+                <div className="rounded-lg border bg-card p-2 space-y-2">
+                    <Input
+                        placeholder={t('common.search')}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="h-8 text-sm"
+                    />
+                    <div
+                        className="grid grid-cols-7 gap-1 max-h-[200px] overflow-y-auto p-1"
+                        style={{ touchAction: "pan-y" }}
+                    >
+                        {filteredIcons.map((iconName) => {
+                            const Icon = ValidIcons[iconName];
+                            if (!Icon) return null;
+                            return (
+                                <button
+                                    key={iconName}
+                                    type="button"
+                                    onClick={() => {
+                                        onChange(iconName);
+                                        setOpen(false);
+                                    }}
+                                    className={cn(
+                                        "flex items-center justify-center aspect-square rounded-md hover:bg-accent transition-colors",
+                                        value === iconName && "bg-accent ring-2 ring-primary ring-inset"
+                                    )}
+                                    title={iconName}
+                                >
+                                    <Icon className="w-4 h-4" style={{ color: value === iconName ? color : undefined }} />
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {filteredIcons.length === 0 && (
+                        <p className="text-center text-sm text-muted-foreground py-4">
+                            {t('common.noData')}
+                        </p>
+                    )}
+                </div>
+            )}
+        </div>
     );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -12,7 +12,6 @@ import {
     Loader2,
     ListFilter,
     Calendar,
-    ChevronDown
 } from "lucide-react";
 import {
     format,
@@ -97,7 +96,6 @@ export default function TransactionsPage() {
     const [isAutoCategorizing, setIsAutoCategorizing] = useState(false);
 
     // Filter State
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [periodType, setPeriodType] = useState<PeriodType>("month");
     const [selectedDate, setSelectedDate] = useState(new Date());
 
