@@ -150,7 +150,20 @@ export const seedCategories = async (userId: string) => {
             ]
         },
 
-        // 10. Chi phí khác
+        // 10. Chi phí Tết
+        {
+            name: "Chi phí Tết", type: "expense", icon: "Sparkles", color: "#dc2626", children: [
+                { name: "Bánh chưng/Mứt/Kẹo", icon: "CakeSlice", color: "#f87171" },
+                { name: "Thực phẩm Tết", icon: "Ham", color: "#ef4444" },
+                { name: "Quà biếu Tết", icon: "Package", color: "#b91c1c" },
+                { name: "Lì xì", icon: "HandCoins", color: "#fbbf24" },
+                { name: "Hoa/Cây cảnh", icon: "Flower2", color: "#22c55e" },
+                { name: "Quần áo Tết", icon: "Ribbon", color: "#ec4899" },
+                { name: "Tiệc tất niên", icon: "PartyPopper", color: "#f97316" },
+            ]
+        },
+
+        // 11. Chi phí khác
         {
             name: "Chi phí khác", type: "expense", icon: "CircleDollarSign", color: "#78716c", children: [
                 { name: "Thuế", icon: "Landmark", color: "#57534e" },
@@ -193,7 +206,16 @@ export const seedCategories = async (userId: string) => {
             ]
         },
 
-        // 4. Thu nhập khác
+        // 4. Thu nhập Tết
+        {
+            name: "Thu nhập Tết", type: "income", icon: "Sparkles", color: "#dc2626", children: [
+                { name: "Thưởng Tết", icon: "Trophy", color: "#fbbf24" },
+                { name: "Lì xì nhận được", icon: "HandCoins", color: "#ef4444" },
+                { name: "Bán hàng Tết", icon: "ShoppingBag", color: "#f97316" },
+            ]
+        },
+
+        // 5. Thu nhập khác
         {
             name: "Thu nhập khác", type: "income", icon: "Coins", color: "#a855f7", children: [
                 { name: "Quà được tặng", icon: "Gift", color: "#c084fc" },
