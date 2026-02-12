@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { ArrowRight } from "lucide-react";
@@ -33,6 +33,8 @@ interface TransferFormData {
     note: string;
 }
 
+const DRAFT_KEY = "piggy_draft_transfer";
+
 interface TransferFormProps {
     onSuccess?: () => void;
 }
@@ -44,6 +46,33 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
     const { profile } = useUserProfile();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Read draft SYNCHRONOUSLY before useForm — same pattern as edit mode
+    const initialValues = (() => {
+        try {
+            const savedDraft = localStorage.getItem(DRAFT_KEY);
+            if (savedDraft) {
+                const parsed = JSON.parse(savedDraft);
+                return {
+                    fromWalletId: parsed.fromWalletId || "",
+                    toWalletId: parsed.toWalletId || "",
+                    amount: parsed.amount || "",
+                    date: parsed.date ? new Date(parsed.date) : new Date(),
+                    note: parsed.note || "",
+                };
+            }
+        } catch (e) {
+            console.error("Failed to load transfer draft:", e);
+        }
+
+        // Fallback defaults
+        return {
+            date: new Date(),
+            note: "",
+            fromWalletId: "",
+            toWalletId: "",
+        };
+    })();
+
     const {
         register,
         handleSubmit,
@@ -51,22 +80,34 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
         setValue,
         formState: { errors },
     } = useForm<TransferFormData>({
-        defaultValues: {
-            date: new Date(),
-            note: "",
-            fromWalletId: "",
-            toWalletId: "",
-        },
+        defaultValues: initialValues,
     });
+
+    // Auto-save draft with Debounce
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        const subscription = watch((value) => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current);
+            }
+            saveTimeoutRef.current = setTimeout(() => {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(value));
+            }, 500);
+        });
+        return () => {
+            subscription.unsubscribe();
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        }
+    }, [watch]);
 
     const fromWalletId = watch("fromWalletId");
     const toWalletId = watch("toWalletId");
     const selectedDate = watch("date");
 
-    // Set default wallet
+    // Set default wallet (only if no walletId from draft)
     useEffect(() => {
         if (profile?.defaultWalletId && !fromWalletId) {
-            // Check if default wallet exists in available wallets
             const walletExists = wallets.some(w => w.id === profile.defaultWalletId);
             if (walletExists) {
                 setValue("fromWalletId", profile.defaultWalletId);
@@ -106,6 +147,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
             );
 
             toast.success(t("transaction.transferSuccess"));
+            localStorage.removeItem(DRAFT_KEY); // Clear draft
             onSuccess?.();
         } catch (error) {
             console.error("Transfer failed:", error);

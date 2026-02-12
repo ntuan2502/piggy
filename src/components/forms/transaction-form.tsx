@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +44,10 @@ const transactionSchema = z.object({
     date: z.date(),
     note: z.string().optional(),
     tags: z.string().optional(), // We'll input as string and split
+    type: z.enum(["income", "expense"]),
 });
+
+const DRAFT_KEY = "piggy_draft_transaction";
 
 export function TransactionForm({
     transaction,
@@ -61,33 +64,65 @@ export function TransactionForm({
     const { categories } = useCategories();
     const { profile } = useUserProfile();
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<string>(transaction?.type || "expense");
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 
-    const form = useForm<z.infer<typeof transactionSchema>>({
-        resolver: zodResolver(transactionSchema),
-        defaultValues: transaction ? {
-            amount: transaction.amount,
-            walletId: transaction.walletId,
-            categoryId: transaction.categoryId,
-            date: transaction.date,
-            note: transaction.note || "",
-            tags: transaction.tags?.join(", ") || "",
-        } : {
+    // Read draft SYNCHRONOUSLY before useForm — same pattern as edit mode
+    const initialValues = (() => {
+        if (transaction) {
+            return {
+                amount: transaction.amount,
+                walletId: transaction.walletId,
+                categoryId: transaction.categoryId,
+                date: transaction.date,
+                note: transaction.note || "",
+                tags: transaction.tags?.join(", ") || "",
+                type: (transaction.type === "income" || transaction.type === "expense") ? transaction.type : "expense" as const,
+            };
+        }
+
+        // Try loading draft from localStorage for create mode
+        if (mode === "create") {
+            try {
+                const savedDraft = localStorage.getItem(DRAFT_KEY);
+                if (savedDraft) {
+                    const parsed = JSON.parse(savedDraft);
+                    return {
+                        amount: parsed.amount || 0,
+                        walletId: parsed.walletId || "",
+                        categoryId: parsed.categoryId || "",
+                        date: parsed.date ? new Date(parsed.date) : new Date(),
+                        note: parsed.note || "",
+                        tags: parsed.tags || "",
+                        type: (parsed.type === "income" || parsed.type === "expense") ? parsed.type : "expense" as const,
+                    };
+                }
+            } catch (e) {
+                console.error("Failed to load draft:", e);
+            }
+        }
+
+        // Fallback defaults
+        return {
             amount: 0,
             walletId: "",
             categoryId: "",
             date: new Date(),
             note: "",
             tags: "",
-        },
+            type: "expense" as const,
+        };
+    })();
+
+    const form = useForm<z.infer<typeof transactionSchema>>({
+        resolver: zodResolver(transactionSchema),
+        defaultValues: initialValues,
     });
 
     // Set default wallet
-    const { setValue } = form;
-    const walletId = useWatch({ control: form.control, name: "walletId" });
-    const note = useWatch({ control: form.control, name: "note" });
+    const { setValue, watch } = form;
+    const note = watch("note");
+    const type = watch("type");
 
     // Cooldown timer effect
     useEffect(() => {
@@ -97,20 +132,20 @@ export function TransactionForm({
         }
     }, [cooldown]);
 
+    // Set default wallet (only if no walletId from draft or transaction)
     useEffect(() => {
-        if (profile?.defaultWalletId && !walletId) {
-            // Ensure the default wallet actually exists in the current list
+        const currentWalletId = form.getValues("walletId");
+        if (profile?.defaultWalletId && !currentWalletId) {
             const walletExists = wallets.some(w => w.id === profile.defaultWalletId);
             if (walletExists) {
                 setValue("walletId", profile.defaultWalletId);
             }
         }
-    }, [profile, wallets, walletId, setValue]);
+    }, [profile, wallets, setValue, form]);
 
-    // Sync activeTab and form values when transaction prop changes
+    // Sync form values when transaction prop changes
     useEffect(() => {
         if (transaction) {
-            setActiveTab(transaction.type);
             form.reset({
                 amount: transaction.amount,
                 walletId: transaction.walletId,
@@ -118,9 +153,34 @@ export function TransactionForm({
                 date: transaction.date,
                 note: transaction.note || "",
                 tags: transaction.tags?.join(", ") || "",
+                type: (transaction.type === "income" || transaction.type === "expense") ? transaction.type : "expense",
             });
         }
     }, [transaction, form]);
+
+    // Auto-save draft with Debounce
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (mode === "create" && !transaction) {
+            const subscription = form.watch((value) => {
+                if (saveTimeoutRef.current) {
+                    clearTimeout(saveTimeoutRef.current);
+                }
+
+                saveTimeoutRef.current = setTimeout(() => {
+                    localStorage.setItem(DRAFT_KEY, JSON.stringify(value));
+                }, 500);
+            });
+
+            return () => {
+                subscription.unsubscribe();
+                if (saveTimeoutRef.current) {
+                    clearTimeout(saveTimeoutRef.current);
+                }
+            };
+        }
+    }, [form, mode, transaction]);
 
     const handleAiSuggest = async () => {
         const note = form.getValues("note");
@@ -139,7 +199,7 @@ export function TransactionForm({
                     // ONLY send categories that match the current mode (Income/Expense)
                     // This forces AI to pick a valid category for the selected type
                     categories: categories
-                        .filter(c => c.type === activeTab)
+                        .filter(c => c.type === type)
                         .map(c => ({ id: c.id, name: c.name, type: c.type })),
                     apiKey: profile?.geminiApiKey,
                     model: profile?.geminiModel
@@ -151,7 +211,10 @@ export function TransactionForm({
                 // Check if category exists
                 const cat = categories.find(c => c.id === data.categoryId);
                 if (cat) {
-                    // setActiveTab(cat.type); // User requested to NOT change type
+                    // If category type differs from current type, switch type
+                    if (cat.type !== type && (cat.type === "income" || cat.type === "expense")) {
+                        form.setValue("type", cat.type);
+                    }
                     form.setValue("categoryId", data.categoryId);
                 }
             }
@@ -167,8 +230,8 @@ export function TransactionForm({
         if (!user) return;
         setError(null);
         try {
-            // Determine type: Use activeTab by default, but override with category type if selected
-            let type: TransactionType = activeTab as TransactionType;
+            // Determine type: Use form type by default
+            let type: TransactionType = values.type as TransactionType;
             if (values.categoryId) {
                 const cat = categories.find(c => c.id === values.categoryId);
                 if (cat) {
@@ -203,6 +266,7 @@ export function TransactionForm({
             }
 
             form.reset();
+            localStorage.removeItem(DRAFT_KEY); // Clear draft on success
             onSuccess();
         } catch (e) {
             console.error("Transaction failed:", e);
@@ -212,8 +276,8 @@ export function TransactionForm({
 
     return (
         <Form {...form}>
-            <Tabs value={activeTab} className="w-full" onValueChange={(val) => {
-                setActiveTab(val);
+            <Tabs value={type} className="w-full" onValueChange={(val) => {
+                form.setValue("type", val as "income" | "expense");
                 form.setValue("categoryId", "");
             }}>
                 {!transaction?.isTransfer && (
@@ -271,7 +335,7 @@ export function TransactionForm({
                         render={({ field }) => {
                             // Filter categories by activeTab and sort by order
                             const filteredCategories = categories
-                                .filter(c => c.type === activeTab)
+                                .filter(c => c.type === type)
                                 .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
                             const rootCategories = filteredCategories.filter(c => !c.parentId);
                             const getChildren = (parentId: string) =>

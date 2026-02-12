@@ -45,12 +45,6 @@ export default function LandingPage() {
         }
     };
 
-    const toggleLanguage = () => {
-        const newLang = i18n.language === 'vi' ? 'en' : 'vi';
-        i18n.changeLanguage(newLang);
-        localStorage.setItem('language', newLang);
-    };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800">
@@ -112,18 +106,25 @@ export default function LandingPage() {
                         <span className="font-semibold text-gray-800 dark:text-gray-100">{t('common.appName')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        {/* Language Toggle */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={toggleLanguage}
-                            className="h-9 px-3 gap-2"
-                        >
-                            <Globe className="h-4 w-4" />
-                            <span className="text-sm font-medium">{i18n.language === 'vi' ? 'VI' : 'EN'}</span>
-                        </Button>
+                        {/* Language Dropdown */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-9 px-3 gap-2">
+                                    <Globe className="h-4 w-4" />
+                                    <span className="text-sm font-medium">{i18n.language === 'vi' ? 'VI' : 'EN'}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => i18n.changeLanguage('en')}>
+                                    English {i18n.language === 'en' && "✓"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => i18n.changeLanguage('vi')}>
+                                    Tiếng Việt {i18n.language === 'vi' && "✓"}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
-                        {/* Theme Toggle */}
+                        {/* Theme Dropdown */}
                         {mounted && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -140,15 +141,15 @@ export default function LandingPage() {
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => setTheme('light')}>
                                         <Sun className="mr-2 h-4 w-4" />
-                                        {t('theme.light')}
+                                        {t('theme.light')} {theme === 'light' && "✓"}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setTheme('dark')}>
                                         <Moon className="mr-2 h-4 w-4" />
-                                        {t('theme.dark')}
+                                        {t('theme.dark')} {theme === 'dark' && "✓"}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setTheme('system')}>
                                         <Monitor className="mr-2 h-4 w-4" />
-                                        {t('theme.system')}
+                                        {t('theme.system')} {theme === 'system' && "✓"}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

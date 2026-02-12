@@ -46,6 +46,18 @@ export function AppSidebar() {
     const { isMobile, setOpenMobile } = useSidebar();
 
     const handleLogout = async () => {
+        // Clear all localStorage except language and theme preferences
+        const keysToPreserve = ["i18nextLng", "theme"];
+        const preserved: Record<string, string> = {};
+        keysToPreserve.forEach(key => {
+            const value = localStorage.getItem(key);
+            if (value !== null) preserved[key] = value;
+        });
+        localStorage.clear();
+        Object.entries(preserved).forEach(([key, value]) => {
+            localStorage.setItem(key, value);
+        });
+
         await auth.signOut();
         router.push("/");
     };
