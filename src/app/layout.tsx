@@ -26,7 +26,7 @@ export async function generateMetadata() {
 
   return {
     title: {
-      template: `%s | ${t.common.appName}`,
+      template: `${t.common.appName} | %s`,
       default: t.common.appName,
     },
     description: t.landing.description,
