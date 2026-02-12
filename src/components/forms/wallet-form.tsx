@@ -137,7 +137,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                                     <Input
                                         type="text"
                                         placeholder="0"
-                                        value={formatVNCurrency(field.value)}
+                                        value={formatVNCurrency(field.value, false)}
                                         onChange={(e) => {
                                             const formatted = formatVNCurrencyInput(e.target.value);
                                             const numericValue = parseVNCurrency(formatted);

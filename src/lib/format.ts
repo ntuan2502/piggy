@@ -2,11 +2,12 @@
  * Format number to Vietnamese locale
  * Example: 1000000.5 -> "1.000.000,50"
  */
-export function formatVNCurrency(amount: number): string {
-    return new Intl.NumberFormat('vi-VN', {
+export function formatVNCurrency(amount: number, withSuffix: boolean = true): string {
+    const formatted = new Intl.NumberFormat('vi-VN', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
     }).format(amount);
+    return withSuffix ? `${formatted} VND` : formatted;
 }
 
 /**
@@ -33,7 +34,7 @@ export function formatCompactVNCurrency(amount: number): string {
         // Nghìn (Thousand)
         return sign + (absAmount / 1_000).toFixed(1).replace('.', ',') + 'K';
     }
-    return formatVNCurrency(amount);
+    return formatVNCurrency(amount, true);
 }
 
 /**

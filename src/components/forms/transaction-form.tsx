@@ -327,7 +327,7 @@ export function TransactionForm({
                                     </FormControl>
                                     <SelectContent>
                                         {wallets.map(w => (
-                                            <SelectItem key={w.id} value={w.id}>{w.name} ({formatVNCurrency(w.balance)} {w.currency})</SelectItem>
+                                            <SelectItem key={w.id} value={w.id}>{w.name} ({formatVNCurrency(w.balance)})</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -422,7 +422,7 @@ export function TransactionForm({
                                     <Input
                                         type="text"
                                         placeholder="1.000.000"
-                                        value={field.value > 0 ? formatVNCurrency(field.value) : ''}
+                                        value={field.value > 0 ? formatVNCurrency(field.value, false) : ''}
                                         onChange={(e) => {
                                             const formatted = formatVNCurrencyInput(e.target.value);
                                             const numericValue = parseVNCurrency(formatted);

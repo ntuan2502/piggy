@@ -181,7 +181,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                         <SelectContent>
                             {availableFromWallets.map((wallet) => (
                                 <SelectItem key={wallet.id} value={wallet.id}>
-                                    <span className="truncate">{wallet.name} ({formatVNCurrency(wallet.balance)} {wallet.currency})</span>
+                                    <span className="truncate">{wallet.name} ({formatVNCurrency(wallet.balance)})</span>
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -226,7 +226,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                         <SelectContent>
                             {availableToWallets.map((wallet) => (
                                 <SelectItem key={wallet.id} value={wallet.id}>
-                                    <span className="truncate">{wallet.name} ({formatVNCurrency(wallet.balance)} {wallet.currency})</span>
+                                    <span className="truncate">{wallet.name} ({formatVNCurrency(wallet.balance)})</span>
                                 </SelectItem>
                             ))}
                         </SelectContent>

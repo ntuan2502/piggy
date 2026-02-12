@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Separator } from "@/components/ui/separator";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import "@/lib/i18n";
 
 import { ReactNode } from "react";
@@ -34,7 +35,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 transition-all">
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
                         <h1 className="text-lg font-semibold">{getPageTitle()}</h1>
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     <div className="flex flex-1 flex-col gap-4 p-4">
                         {children}
                     </div>
+                    <ScrollToTop />
                 </SidebarInset>
             </SidebarProvider>
         </ProtectedRoute>

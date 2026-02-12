@@ -29,16 +29,7 @@ export const addTransaction = async (userId: string, transaction: Omit<Transacti
             } else if (transaction.type === 'expense') {
                 newBalance -= transaction.amount;
             }
-            // Debt/Loan logic depends on semantics (Borrowing = Income?, Lending = Expense?). 
-            // Simplified: Debt (Borrowing) -> + Balance? Loan (Lending) -> - Balance?
-            // Money Lover: Debt (I owe) -> Inflow? Loan (They owe) -> Outflow?
-            // Let's keep it simple: Income (+), Expense (-). Debt/Loan just record for now or treat as Income/Expense.
-            // I'll assume Debt is Inflow (money comes in), Loan is Outflow (money goes out).
-            else if (transaction.type === 'debt') {
-                newBalance += transaction.amount;
-            } else if (transaction.type === 'loan') {
-                newBalance -= transaction.amount;
-            }
+
 
 
             // 4. Update Wallet
@@ -227,9 +218,9 @@ export const updateTransaction = async (
                 let currentBalance = walletData.balance || 0;
 
                 // Revert old transaction effect
-                if (oldData.type === 'income' || oldData.type === 'debt') {
+                if (oldData.type === 'income') {
                     currentBalance -= oldData.amount;
-                } else if (oldData.type === 'expense' || oldData.type === 'loan') {
+                } else if (oldData.type === 'expense') {
                     currentBalance += oldData.amount;
                 }
 
@@ -237,9 +228,9 @@ export const updateTransaction = async (
                 const newAmount = updates.amount ?? oldData.amount;
                 const newType = updates.type ?? oldData.type;
 
-                if (newType === 'income' || newType === 'debt') {
+                if (newType === 'income') {
                     currentBalance += newAmount;
-                } else if (newType === 'expense' || newType === 'loan') {
+                } else if (newType === 'expense') {
                     currentBalance -= newAmount;
                 }
 
@@ -353,9 +344,9 @@ export const deleteTransaction = async (transactionId: string, userId: string) =
 
             // 1. Revert main transaction effect on main wallet
             let currentBalance = walletData.balance || 0;
-            if (transactionData.type === 'income' || transactionData.type === 'debt') {
+            if (transactionData.type === 'income') {
                 currentBalance -= transactionData.amount;
-            } else if (transactionData.type === 'expense' || transactionData.type === 'loan') {
+            } else if (transactionData.type === 'expense') {
                 currentBalance += transactionData.amount;
             }
             firestoreTransaction.update(walletRef, { balance: currentBalance });
@@ -368,9 +359,9 @@ export const deleteTransaction = async (transactionId: string, userId: string) =
                 let linkedBalance = linkedWalletData.balance || 0;
 
                 // Revert linked transaction effect
-                if (linkedTransactionData.type === 'income' || linkedTransactionData.type === 'debt') {
+                if (linkedTransactionData.type === 'income') {
                     linkedBalance -= linkedTransactionData.amount;
-                } else if (linkedTransactionData.type === 'expense' || linkedTransactionData.type === 'loan') {
+                } else if (linkedTransactionData.type === 'expense') {
                     linkedBalance += linkedTransactionData.amount;
                 }
 

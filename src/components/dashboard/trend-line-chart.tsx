@@ -105,7 +105,7 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                                 if (active && payload && payload.length) {
                                     const data = payload[0].payload as TrendData;
                                     const filteredTransactions = data.transactions.filter(tx => {
-                                        const isIncome = tx.type === 'income' || tx.type === 'debt';
+                                        const isIncome = tx.type === 'income';
                                         if (isIncome && !showIncome) return false;
                                         if (!isIncome && !showExpense) return false;
                                         return true;
@@ -136,8 +136,8 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                                                     {topTransactions.map((tx, i) => (
                                                         <div key={i} className="flex justify-between items-start gap-2">
                                                             <span className="truncate opacity-80 flex-1" title={tx.note}>{tx.note || t('common.none')}</span>
-                                                            <span className={`${tx.type === 'income' || tx.type === 'debt' ? 'text-green-500' : 'text-red-500'} font-medium whitespace-nowrap`}>
-                                                                {tx.type === 'income' || tx.type === 'debt' ? '+' : '-'}{formatVNCurrency(tx.amount)}
+                                                            <span className={`${tx.type === 'income' ? 'text-green-500' : 'text-red-500'} font-medium whitespace-nowrap`}>
+                                                                {tx.type === 'income' ? '+' : '-'}{formatVNCurrency(tx.amount)}
                                                             </span>
                                                         </div>
                                                     ))}

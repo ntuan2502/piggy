@@ -129,7 +129,7 @@ function SortableWalletCard({
                 </CardHeader>
                 <CardContent>
                     <div className={cn("text-2xl font-bold truncate", isCredit ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400")}>
-                        {formatVNCurrency(wallet.balance)} {wallet.currency}
+                        {formatVNCurrency(wallet.balance)}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                         {t('wallet.totalBalance')}
@@ -336,7 +336,7 @@ export default function WalletsPage() {
                 </CardHeader>
                 <CardContent className="relative z-10">
                     <div className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-                        {formatVNCurrency(netWorth)} <span className="text-xl md:text-2xl font-normal opacity-70">VND</span>
+                        {formatVNCurrency(netWorth)}
                     </div>
 
                     {/* Stats Panels */}
@@ -395,7 +395,7 @@ export default function WalletsPage() {
                         <Banknote className="h-5 w-5 text-green-600 dark:text-green-400" />
                         <h2 className="text-2xl font-semibold">{t('wallet.typeAvailable')}</h2>
                         <span className="text-muted-foreground">
-                            ({formatVNCurrency(availableTotal)} VND)
+                            ({formatVNCurrency(availableTotal)})
                         </span>
                     </div>
                     {availableWallets.length > 0 ? (
@@ -430,7 +430,7 @@ export default function WalletsPage() {
                         <CreditCard className="h-5 w-5 text-red-600 dark:text-red-400" />
                         <h2 className="text-2xl font-semibold">{t('wallet.typeCredit')}</h2>
                         <span className="text-muted-foreground">
-                            ({formatVNCurrency(creditDebtTotal)} VND)
+                            ({formatVNCurrency(creditDebtTotal)})
                         </span>
                     </div>
                     {creditWallets.length > 0 ? (
