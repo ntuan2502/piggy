@@ -359,26 +359,34 @@ export default function TransactionsClient() {
 
     // Group transactions based on period type
     const groupedTransactions = useMemo(() => {
-        const groups: { key: string; label: string; subLabel?: string; transactions: Transaction[]; total: number }[] = [];
+        const groups: { key: string; label: string; subLabel?: string; transactions: Transaction[]; total: number; date: Date }[] = [];
 
         filteredTransactions.forEach(tx => {
             const txDate = new Date(tx.date);
             let groupKey: string;
             let groupLabel: string;
             let subLabel: string | undefined;
+            let groupDate: Date;
 
             if (periodType === "month") {
                 // Group by day
-                groupKey = startOfDay(txDate).toISOString();
-                groupLabel = format(txDate, "dd");
-                const dayLabel = isToday(txDate)
-                    ? t("common.today")
-                    : isYesterday(txDate)
-                        ? t("common.yesterday")
-                        : format(txDate, "EEEE", { locale });
-                subLabel = dayLabel;
+                groupDate = startOfDay(txDate);
+                groupKey = groupDate.toISOString();
+
+                const isDayToday = isToday(txDate);
+                const isDayYesterday = isYesterday(txDate);
+
+                if (isDayToday) {
+                    groupLabel = t("common.today");
+                } else if (isDayYesterday) {
+                    groupLabel = t("common.yesterday");
+                } else {
+                    groupLabel = format(txDate, "EEEE", { locale });
+                }
+                subLabel = format(txDate, "MMMM yyyy", { locale });
             } else {
                 // Quarter/Year: group by month
+                groupDate = startOfMonth(txDate);
                 groupKey = format(txDate, "yyyy-MM");
                 groupLabel = format(txDate, "MMMM", { locale });
                 subLabel = format(txDate, "yyyy");
@@ -387,7 +395,7 @@ export default function TransactionsClient() {
             let group = groups.find(g => g.key === groupKey);
 
             if (!group) {
-                group = { key: groupKey, label: groupLabel, subLabel, transactions: [], total: 0 };
+                group = { key: groupKey, label: groupLabel, subLabel, transactions: [], total: 0, date: groupDate };
                 groups.push(group);
             }
 
@@ -760,14 +768,21 @@ export default function TransactionsClient() {
                     {groupedTransactions.map((group) => (
                         <div key={group.key} className="rounded-lg border bg-card shadow-sm overflow-hidden">
                             {/* Group Header */}
-                            <div className="bg-muted/50 px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between border-b">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-base sm:text-lg font-bold capitalize tabular-nums tracking-tight">{group.label}</span>
-                                    {group.subLabel && (
-                                        <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider bg-background px-1.5 py-0.5 rounded border">{group.subLabel}</span>
+                            <div className="bg-muted/30 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between border-b">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                    {periodType === "month" && (
+                                        <span className="text-3xl md:text-4xl font-light tabular-nums leading-none tracking-tighter">
+                                            {format(group.date, "dd")}
+                                        </span>
                                     )}
+                                    <div className="flex flex-col">
+                                        <span className="text-sm md:text-base font-medium capitalize tracking-tight leading-tight">{group.label}</span>
+                                        {group.subLabel && (
+                                            <span className="text-xs text-muted-foreground font-normal leading-tight">{group.subLabel}</span>
+                                        )}
+                                    </div>
                                 </div>
-                                <span className={cn("text-xs sm:text-sm font-semibold tabular-nums", group.total > 0 ? "text-green-600" : "text-red-600")}>
+                                <span className={cn("text-sm md:text-base font-semibold tabular-nums", group.total > 0 ? "text-green-600" : "text-red-600")}>
                                     {group.total > 0 ? "+" : ""}{formatVNCurrency(group.total)}
                                 </span>
                             </div>
