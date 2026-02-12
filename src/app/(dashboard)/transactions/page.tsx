@@ -299,10 +299,8 @@ export default function TransactionsPage() {
     const getTypeColor = (type: string) => {
         switch (type) {
             case 'income':
-            case 'debt':
                 return 'text-green-600 dark:text-green-400';
             case 'expense':
-            case 'loan':
                 return 'text-red-600 dark:text-red-400';
             default:
                 return '';
@@ -394,7 +392,7 @@ export default function TransactionsPage() {
 
             group.transactions.push(tx);
 
-            const isPositive = tx.type === "income" || tx.type === "debt";
+            const isPositive = tx.type === "income";
             if (!tx.excludeFromReport) {
                 group.total += isPositive ? tx.amount : -tx.amount;
             }
@@ -553,8 +551,6 @@ export default function TransactionsPage() {
                                     <SelectItem value="all">{t("transaction.all")}</SelectItem>
                                     <SelectItem value="income">{t("transaction.income")}</SelectItem>
                                     <SelectItem value="expense">{t("transaction.expense")}</SelectItem>
-                                    <SelectItem value="debt">{t("transaction.debt")}</SelectItem>
-                                    <SelectItem value="loan">{t("transaction.loan")}</SelectItem>
                                 </SelectContent>
                             </Select>
 
@@ -654,8 +650,6 @@ export default function TransactionsPage() {
                                         <SelectItem value="all">{t("transaction.all")}</SelectItem>
                                         <SelectItem value="income">{t("transaction.income")}</SelectItem>
                                         <SelectItem value="expense">{t("transaction.expense")}</SelectItem>
-                                        <SelectItem value="debt">{t("transaction.debt")}</SelectItem>
-                                        <SelectItem value="loan">{t("transaction.loan")}</SelectItem>
                                     </SelectContent>
                                 </Select>
 

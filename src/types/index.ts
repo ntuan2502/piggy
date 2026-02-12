@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 
-export type TransactionType = 'income' | 'expense' | 'debt' | 'loan';
+export type TransactionType = 'income' | 'expense';
 export type WalletType = 'available' | 'credit';
 export type Currency = 'VND';
 

@@ -44,8 +44,8 @@ export default function ReportsPage() {
         let income = 0;
         let expense = 0;
         filteredTransactions.forEach(tx => {
-            if (tx.type === 'income' || tx.type === 'debt') income += tx.amount;
-            else if (tx.type === 'expense' || tx.type === 'loan') expense += tx.amount;
+            if (tx.type === 'income') income += tx.amount;
+            else if (tx.type === 'expense') expense += tx.amount;
         });
         return { income, expense, net: income - expense };
     }, [filteredTransactions]);
@@ -90,8 +90,8 @@ export default function ReportsPage() {
 
             if (!dailyMap[key]) dailyMap[key] = { income: 0, expense: 0, date: key, transactions: [] };
 
-            if (tx.type === 'income' || tx.type === 'debt') dailyMap[key].income += tx.amount;
-            else if (tx.type === 'expense' || tx.type === 'loan') dailyMap[key].expense += tx.amount;
+            if (tx.type === 'income') dailyMap[key].income += tx.amount;
+            else if (tx.type === 'expense') dailyMap[key].expense += tx.amount;
 
             dailyMap[key].transactions.push(tx);
         });
