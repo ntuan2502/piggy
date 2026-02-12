@@ -42,7 +42,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
         name: z.string().min(1, t('validation.nameRequired')),
         initialBalance: z.number(),
         balance: z.number(),
-        currency: z.enum(["VND", "USD"]),
+        currency: z.literal("VND"),
         type: z.enum(["available", "credit"]),
     });
 
@@ -52,7 +52,7 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
             name: wallet.name,
             initialBalance: wallet.initialBalance || 0,
             balance: wallet.balance,
-            currency: wallet.currency,
+            currency: "VND", // Force current wallets to VND edit mode compatibility
             type: wallet.type,
         } : {
             name: "",
@@ -199,7 +199,6 @@ export function WalletForm({ onSuccess, wallet, mode = "create" }: WalletFormPro
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="VND">VND</SelectItem>
-                                        <SelectItem value="USD">USD</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />

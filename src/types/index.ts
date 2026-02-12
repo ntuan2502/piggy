@@ -2,6 +2,7 @@ import { Timestamp } from "firebase/firestore";
 
 export type TransactionType = 'income' | 'expense' | 'debt' | 'loan';
 export type WalletType = 'available' | 'credit';
+export type Currency = 'VND';
 
 export interface Wallet {
     id: string;
@@ -9,7 +10,7 @@ export interface Wallet {
     name: string;
     balance: number;
     initialBalance: number;
-    currency: 'VND' | 'USD';
+    currency: Currency;
     type: WalletType;
     icon?: string;
     color?: string;

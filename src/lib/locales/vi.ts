@@ -225,6 +225,7 @@ const vi = {
     wallet: {
         active: "Ví đang dùng",
         add: "Thêm ví mới",
+        addHelp: "Thêm ví để theo dõi nguồn tiền của bạn.",
         availableTotal: "Tổng tiền có sẵn",
         color: "Màu sắc",
         confirmDelete: "Bạn có chắc chắn muốn xóa ví này? Hành động này không thể hoàn tác.",
@@ -241,6 +242,7 @@ const vi = {
         deleteSuccess: "Đã xóa ví thành công",
         description: "Quản lý các tài khoản và ví của bạn",
         edit: "Sửa ví",
+        editHelp: "Cập nhật thông tin ví hoặc xóa ví.",
         initialBalance: "Số dư ban đầu",
         name: "Tên ví",
         netWorth: "Tài sản ròng",

@@ -225,6 +225,7 @@ const en = {
     wallet: {
         active: "Active Wallets",
         add: "Add Wallet",
+        addHelp: "Add a wallet to track your funds.",
         availableTotal: "Total Available",
         color: "Color",
         confirmDelete: "Are you sure you want to delete this wallet? This action cannot be undone.",
@@ -241,6 +242,7 @@ const en = {
         deleteSuccess: "Wallet deleted successfully",
         description: "Manage your wallets and accounts",
         edit: "Edit Wallet",
+        editHelp: "Update wallet details or delete wallet.",
         initialBalance: "Initial Balance",
         name: "Wallet Name",
         netWorth: "Net Worth",
