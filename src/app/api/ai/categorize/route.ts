@@ -50,9 +50,31 @@ export async function POST(req: Request) {
         `;
 
         const aiModel = createGeminiModel(finalApiKey, model);
-        const result = await aiModel.generateContent(prompt);
-        const response = result.response;
-        let text = response.text();
+        const response = await aiModel.generateContent(prompt);
+
+        // The new SDK response might need different handling to get text.
+        // Usually response.text() is available if it's a helper, but let's be safe.
+        // Checking if response.text() exists, otherwise fallback to candidates.
+        let text = "";
+
+        // The response might be null/undefined if something went wrong in the wrapper, though we throw.
+        if (!response) {
+            throw new Error("No response from AI model");
+        }
+
+        // Based on official Quickstart: response.text is a property/getter
+        // @ts-expect-error - The types might not be fully updated in the IDE yet, but runtime should be correct.
+        text = response.text;
+
+        if (!text) {
+            // Fallback for safety using optional chaining
+            text = response?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        }
+
+        if (!text) {
+            console.error("Unexpected AI Response structure:", JSON.stringify(response));
+            throw new Error("Invalid AI Response");
+        }
 
         // Clean up markdown code blocks if present
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -74,6 +96,6 @@ export async function POST(req: Request) {
 
     } catch (error) {
         console.error("AI Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: "Internal Server Error: " + error }, { status: 500 });
     }
 }

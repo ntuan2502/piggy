@@ -156,6 +156,7 @@ const vi = {
         aiModelHelp: "Chọn mô hình AI để tự động phân loại.",
         aiModelLiteDesc: "(Nhanh & Tiết kiệm)",
         aiModelFlashDesc: "(Thông minh hơn)",
+        aiModelProDesc: "(Mạnh mẽ nhất)",
         userPreferences: "Tùy chọn cá nhân",
         userPreferencesDescription: "Tùy chỉnh trải nghiệm ứng dụng"
     },

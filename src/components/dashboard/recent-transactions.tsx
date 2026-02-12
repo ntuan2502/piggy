@@ -51,7 +51,7 @@ export function RecentTransactions() {
             <CardContent>
                 <div className="space-y-4">
                     {transactions.map((transaction) => {
-                        const isIncome = transaction.type === 'income' || transaction.type === 'loan';
+                        const isIncome = transaction.type === 'income';
                         const currency = getWalletCurrency(transaction.walletId);
                         const category = getCategory(transaction.categoryId);
 

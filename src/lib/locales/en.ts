@@ -156,6 +156,7 @@ const en = {
         aiModelHelp: "Select the AI model for auto-categorization.",
         aiModelLiteDesc: "(Fast & Efficient)",
         aiModelFlashDesc: "(Smarter)",
+        aiModelProDesc: "(Most Capable)",
         userPreferences: "User Preferences",
         userPreferencesDescription: "Customize your app experience"
     },
