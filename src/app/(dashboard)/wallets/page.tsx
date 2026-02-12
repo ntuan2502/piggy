@@ -9,9 +9,27 @@ import {
     CreditCard,
     Banknote,
     RefreshCw,
-    Loader2
+    Loader2,
+    GripVertical
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    rectSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,11 +45,115 @@ import { WalletForm } from "@/components/forms/wallet-form";
 import { useWallets } from "@/hooks/use-wallets";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { updateUserProfile } from "@/services/user.service";
-import { recalculateAllWalletBalances } from "@/services/wallet.service";
+import { recalculateAllWalletBalances, reorderWallets } from "@/services/wallet.service";
 import { useAuth } from "@/components/providers/auth-provider";
 import { formatVNCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Wallet } from "@/types";
+
+// Sortable Item Component
+function SortableWalletCard({
+    wallet,
+    isDefault,
+    onSetDefault,
+    onClick
+}: {
+    wallet: Wallet,
+    isDefault: boolean,
+    onSetDefault: () => void,
+    onClick: () => void
+}) {
+    const { t } = useTranslation();
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: wallet.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+        position: 'relative' as const,
+        touchAction: 'none'
+    };
+
+    const isCredit = wallet.type === 'credit';
+
+    return (
+        <div ref={setNodeRef} style={style} className={cn("group", isDragging ? "z-50" : "")}>
+            <Card
+                className={cn(
+                    "relative transition-all hover:shadow-md cursor-pointer h-full overflow-hidden",
+                    isDragging ? "opacity-50 shadow-xl scale-105 ring-2 ring-primary" : "",
+                    isCredit ? "border-red-200 dark:border-red-900" : "border-green-200 dark:border-green-900",
+                    isDefault ? "ring-2 ring-yellow-400 dark:ring-yellow-500 border-yellow-400 dark:border-yellow-500" : ""
+                )}
+                onClick={onClick}
+            >
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="flex items-center gap-2 pr-8">
+                        {isDefault && (
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                        )}
+                        <CardTitle className="text-sm font-medium truncate">
+                            {wallet.name}
+                        </CardTitle>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        {!isDefault && !isCredit && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-muted-foreground hover:text-yellow-500 -mr-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSetDefault();
+                                }}
+                                title={t('wallet.setDefault')}
+                            >
+                                <Star className="h-4 w-4" />
+                            </Button>
+                        )}
+
+                        {isCredit ? (
+                            <CreditCard className={cn("h-4 w-4", isDefault ? "text-yellow-600" : "text-red-600 dark:text-red-400")} />
+                        ) : (
+                            <WalletIcon className={cn("h-4 w-4", isDefault ? "text-yellow-600" : "text-green-600 dark:text-green-400")} />
+                        )}
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className={cn("text-2xl font-bold truncate", isCredit ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400")}>
+                        {formatVNCurrency(wallet.balance)} {wallet.currency}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {t('wallet.totalBalance')}
+                    </p>
+
+                    {/* Drag Handle - Valid target for drag listeners */}
+                    <div
+                        className="absolute top-0 right-0 p-3 text-muted-foreground opacity-10 md:opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:bg-muted/50 rounded-bl-lg z-10"
+                        {...attributes}
+                        {...listeners}
+                        onClick={(e) => {
+                            e.stopPropagation(); // prevent card click
+                        }}
+                        title={t('common.dragToReorder')}
+                    >
+                        <GripVertical className="h-4 w-4" />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+
 
 export default function WalletsPage() {
     const { wallets, loading } = useWallets();
@@ -104,6 +226,54 @@ export default function WalletsPage() {
         }
     };
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) {
+            return;
+        }
+
+        const activeWallet = wallets.find(w => w.id === active.id);
+        const overWallet = wallets.find(w => w.id === over.id);
+
+        if (!activeWallet || !overWallet || activeWallet.type !== overWallet.type) {
+            return;
+        }
+
+        const isAvailableGroup = activeWallet.type === 'available';
+        const currentList = isAvailableGroup ? availableWallets : creditWallets;
+
+        const oldIndex = currentList.findIndex(w => w.id === active.id);
+        const newIndex = currentList.findIndex(w => w.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+            const reorderedList = arrayMove(currentList, oldIndex, newIndex);
+
+            const updates = reorderedList.map((w, index) => ({
+                id: w.id,
+                order: index + 1
+            }));
+
+            try {
+                await reorderWallets(updates);
+            } catch (error) {
+                console.error("Failed to reorder wallets:", error);
+                toast.error("Failed to save new order");
+            }
+        }
+    };
+
     if (loading) return <div>{t('common.loading')}</div>;
 
     return (
@@ -155,20 +325,18 @@ export default function WalletsPage() {
                 </Dialog>
             </div>
 
-            {/* Net Worth Summary */}
-            <Card className="bg-gradient-to-br from-blue-600 to-purple-700 text-white shadow-lg overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+            {/* Net Worth Summary Card */}
+            <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg border-0 overflow-hidden relative">
+                {/* Decorative circles */}
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
 
-                <CardHeader className="pb-1">
-                    <CardTitle className="text-lg font-medium opacity-90">{t('wallet.netWorth')}</CardTitle>
+                <CardHeader className="pb-2 relative z-10">
+                    <CardTitle className="text-sm font-medium opacity-80 uppercase tracking-widest">{t('wallet.netWorth')}</CardTitle>
                 </CardHeader>
-
-                <CardContent className="space-y-4">
-                    {/* Main Net Worth Value */}
-                    <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4 -mt-2">
-                        <div className="text-4xl sm:text-5xl font-bold tracking-tight">
-                            {formatVNCurrency(netWorth)} <span className="text-xl sm:text-2xl font-normal opacity-80">VND</span>
-                        </div>
+                <CardContent className="relative z-10">
+                    <div className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+                        {formatVNCurrency(netWorth)} <span className="text-xl md:text-2xl font-normal opacity-70">VND</span>
                     </div>
 
                     {/* Stats Panels */}
@@ -216,95 +384,81 @@ export default function WalletsPage() {
                 </CardContent>
             </Card>
 
-            {/* Available Money Section */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <Banknote className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <h2 className="text-2xl font-semibold">{t('wallet.typeAvailable')}</h2>
-                    <span className="text-muted-foreground">
-                        ({formatVNCurrency(availableTotal)} VND)
-                    </span>
-                </div>
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {availableWallets.map((wallet) => (
-                        <Card
-                            key={wallet.id}
-                            className="relative transition-all hover:shadow-md cursor-pointer border-green-200 dark:border-green-900"
-                            onClick={() => handleEdit(wallet)}
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+            >
+                {/* Available Money Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                        <Banknote className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        <h2 className="text-2xl font-semibold">{t('wallet.typeAvailable')}</h2>
+                        <span className="text-muted-foreground">
+                            ({formatVNCurrency(availableTotal)} VND)
+                        </span>
+                    </div>
+                    {availableWallets.length > 0 ? (
+                        <SortableContext
+                            items={availableWallets.map(w => w.id)}
+                            strategy={rectSortingStrategy}
                         >
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    {wallet.name}
-                                </CardTitle>
-                                <WalletIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                    {formatVNCurrency(wallet.balance)} {wallet.currency}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {t('wallet.totalBalance')}
-                                </p>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className={cn("absolute top-2 right-2", profile?.defaultWalletId === wallet.id ? "text-yellow-500" : "text-gray-300 hover:text-yellow-500")}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSetDefault(wallet.id);
-                                    }}
-                                    title={t('wallet.default')}
-                                >
-                                    <Star className={cn("h-5 w-5", profile?.defaultWalletId === wallet.id && "fill-current")} />
-                                </Button>
+                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                {availableWallets.map((wallet) => (
+                                    <SortableWalletCard
+                                        key={wallet.id}
+                                        wallet={wallet}
+                                        isDefault={profile?.defaultWalletId === wallet.id}
+                                        onSetDefault={() => handleSetDefault(wallet.id)}
+                                        onClick={() => handleEdit(wallet)}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    ) : (
+                        <Card className="border-dashed">
+                            <CardContent className="flex items-center justify-center py-8 text-muted-foreground">
+                                {t('wallet.noWallets')}
                             </CardContent>
                         </Card>
-                    ))}
+                    )}
                 </div>
-            </div>
 
-            {/* Credit Accounts Section */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    <h2 className="text-2xl font-semibold">{t('wallet.typeCredit')}</h2>
-                    <span className="text-muted-foreground">
-                        ({formatVNCurrency(creditDebtTotal)} VND)
-                    </span>
-                </div>
-                {creditWallets.length > 0 ? (
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                        {creditWallets.map((wallet) => (
-                            <Card
-                                key={wallet.id}
-                                className="relative transition-all hover:shadow-md cursor-pointer border-red-200 dark:border-red-900"
-                                onClick={() => handleEdit(wallet)}
-                            >
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">
-                                        {wallet.name}
-                                    </CardTitle>
-                                    <CreditCard className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                                        {formatVNCurrency(wallet.balance)} {wallet.currency}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('wallet.totalBalance')}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
+                {/* Credit Accounts Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5 text-red-600 dark:text-red-400" />
+                        <h2 className="text-2xl font-semibold">{t('wallet.typeCredit')}</h2>
+                        <span className="text-muted-foreground">
+                            ({formatVNCurrency(creditDebtTotal)} VND)
+                        </span>
                     </div>
-                ) : (
-                    <Card className="border-dashed">
-                        <CardContent className="flex items-center justify-center py-8 text-muted-foreground">
-                            {t('wallet.noCreditAccounts')}
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
+                    {creditWallets.length > 0 ? (
+                        <SortableContext
+                            items={creditWallets.map(w => w.id)}
+                            strategy={rectSortingStrategy}
+                        >
+                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                {creditWallets.map((wallet) => (
+                                    <SortableWalletCard
+                                        key={wallet.id}
+                                        wallet={wallet}
+                                        isDefault={profile?.defaultWalletId === wallet.id}
+                                        onSetDefault={() => handleSetDefault(wallet.id)}
+                                        onClick={() => handleEdit(wallet)}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    ) : (
+                        <Card className="border-dashed">
+                            <CardContent className="flex items-center justify-center py-8 text-muted-foreground">
+                                {t('wallet.noCreditAccounts')}
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            </DndContext>
         </div>
     );
 }

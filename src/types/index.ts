@@ -14,6 +14,7 @@ export interface Wallet {
     type: WalletType;
     icon?: string;
     color?: string;
+    order?: number;
     createdAt: Date | Timestamp;
     updatedAt?: Date | Timestamp;
 }

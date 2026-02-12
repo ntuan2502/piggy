@@ -1,13 +1,31 @@
 import { db } from "@/lib/firebase";
 import { Wallet, WalletType } from "@/types";
-import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, serverTimestamp, getDocs } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, serverTimestamp, getDocs, Timestamp } from "firebase/firestore";
 
 const COLLECTION_NAME = "wallets";
 
+
+// Helper to get max order for a type
+const getMaxOrder = async (userId: string, type: WalletType) => {
+    const q = query(
+        collection(db, COLLECTION_NAME),
+        where("userId", "==", userId),
+        where("type", "==", type)
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return 0;
+
+    const max = Math.max(...snapshot.docs.map(d => d.data().order || 0));
+    return max;
+};
+
 export const addWallet = async (userId: string, wallet: Omit<Wallet, "id" | "userId" | "createdAt" | "updatedAt">) => {
+    const currentMaxOrder = await getMaxOrder(userId, wallet.type);
+
     return addDoc(collection(db, COLLECTION_NAME), {
         ...wallet,
         userId,
+        order: currentMaxOrder + 1,
         // When creating, balance initialized as initialBalance
         balance: wallet.initialBalance ?? wallet.balance,
         createdAt: serverTimestamp(),
@@ -50,6 +68,16 @@ export const updateWallet = async (walletId: string, data: Partial<Wallet>) => {
     });
 };
 
+export const reorderWallets = async (updates: { id: string, order: number }[]) => {
+    const { runTransaction } = await import("firebase/firestore");
+    await runTransaction(db, async (transaction) => {
+        for (const update of updates) {
+            const docRef = doc(db, COLLECTION_NAME, update.id);
+            transaction.update(docRef, { order: update.order });
+        }
+    });
+};
+
 export const deleteWallet = async (walletId: string) => {
     const docRef = doc(db, COLLECTION_NAME, walletId);
     return deleteDoc(docRef);
@@ -62,6 +90,21 @@ export const subscribeToWallets = (userId: string, callback: (wallets: Wallet[])
             id: doc.id,
             ...doc.data(),
         })) as Wallet[];
+
+        // Sort: Type (Available first) -> Order (asc) -> CreatedAt (desc)
+        wallets.sort((a, b) => {
+            if (a.type !== b.type) {
+                return a.type === 'available' ? -1 : 1;
+            }
+            if ((a.order ?? 999) !== (b.order ?? 999)) {
+                return (a.order ?? 999) - (b.order ?? 999);
+            }
+            // Fallback to creation date
+            const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toDate() : a.createdAt;
+            const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toDate() : b.createdAt;
+            return (dateB?.getTime() || 0) - (dateA?.getTime() || 0);
+        });
+
         callback(wallets);
     });
 };
@@ -73,10 +116,12 @@ export const getWalletsByType = async (userId: string, type: WalletType): Promis
         where("type", "==", type)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({
+    const wallets = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
     })) as Wallet[];
+
+    return wallets.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 };
 
 export const createDefaultWallet = async (userId: string) => {
@@ -90,7 +135,8 @@ export const createDefaultWallet = async (userId: string) => {
             currency: "VND",
             type: "available",
             color: "#16a34a", // green-600
-            icon: "Wallet"
+            icon: "Wallet",
+            order: 1
         });
     }
 };

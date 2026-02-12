@@ -138,15 +138,15 @@ export function TransactionForm({
     }, [cooldown]);
 
     // Set default wallet (only if no walletId from draft or transaction)
+    const walletId = watch("walletId");
     useEffect(() => {
-        const currentWalletId = form.getValues("walletId");
-        if (profile?.defaultWalletId && !currentWalletId) {
+        if (profile?.defaultWalletId && !walletId) {
             const walletExists = wallets.some(w => w.id === profile.defaultWalletId);
             if (walletExists) {
                 setValue("walletId", profile.defaultWalletId);
             }
         }
-    }, [profile, wallets, setValue, form]);
+    }, [profile, wallets, walletId, setValue]);
 
     // Sync form values when transaction prop changes
     useEffect(() => {

@@ -775,7 +775,7 @@ export default function TransactionsPage() {
                             <div className="divide-y divide-border/50">
                                 {group.transactions.map((transaction) => {
                                     const category = getCategory(transaction.categoryId);
-                                    const isIncome = transaction.type === "income" || transaction.type === "debt";
+                                    const isIncome = transaction.type === "income";
 
                                     return (
                                         <div
