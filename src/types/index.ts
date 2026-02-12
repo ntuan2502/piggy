@@ -47,6 +47,7 @@ export interface Transaction {
     isTransfer?: boolean;           // Flag to identify transfer transactions
     linkedTransactionId?: string;   // Link to paired transaction (for transfers)
     toWalletId?: string;            // Destination wallet ID (for display purposes)
+    excludeFromReport?: boolean;    // If true, transaction is excluded from report statistics
 }
 
 export interface UserProfile {

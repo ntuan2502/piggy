@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRightLeft, Sparkles, Loader2 } from "lucide-react";
+import { ArrowRightLeft, Sparkles, Loader2, EyeOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ const transactionSchema = z.object({
     note: z.string().optional(),
     tags: z.string().optional(), // We'll input as string and split
     type: z.enum(["income", "expense"]),
+    excludeFromReport: z.boolean().optional(),
 });
 
 const DRAFT_KEY = "piggy_draft_transaction";
@@ -78,6 +80,7 @@ export function TransactionForm({
                 note: transaction.note || "",
                 tags: transaction.tags?.join(", ") || "",
                 type: (transaction.type === "income" || transaction.type === "expense") ? transaction.type : "expense" as const,
+                excludeFromReport: transaction.excludeFromReport || false,
             };
         }
 
@@ -95,6 +98,7 @@ export function TransactionForm({
                         note: parsed.note || "",
                         tags: parsed.tags || "",
                         type: (parsed.type === "income" || parsed.type === "expense") ? parsed.type : "expense" as const,
+                        excludeFromReport: parsed.excludeFromReport || false,
                     };
                 }
             } catch (e) {
@@ -111,6 +115,7 @@ export function TransactionForm({
             note: "",
             tags: "",
             type: "expense" as const,
+            excludeFromReport: false,
         };
     })();
 
@@ -251,6 +256,7 @@ export function TransactionForm({
                     note: values.note || "",
                     tags: tagsArray,
                     type,
+                    excludeFromReport: values.excludeFromReport || false,
                 });
             } else {
                 // Create new transaction
@@ -262,6 +268,7 @@ export function TransactionForm({
                     note: values.note || "",
                     tags: tagsArray,
                     type,
+                    excludeFromReport: values.excludeFromReport || false,
                 });
             }
 
@@ -492,6 +499,26 @@ export function TransactionForm({
                             </Button>
                         </div>
                     )}
+
+                    {/* Exclude from Report Toggle */}
+                    <FormField
+                        control={form.control}
+                        name="excludeFromReport"
+                        render={({ field }) => (
+                            <FormItem className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="flex items-center gap-2">
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-sm font-medium cursor-pointer">{t('transaction.excludeFromReport')}</FormLabel>
+                                        <p className="text-xs text-muted-foreground">{t('transaction.excludeFromReportHint')}</p>
+                                    </div>
+                                </div>
+                                <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
 
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     <Button type="submit" className="w-full">

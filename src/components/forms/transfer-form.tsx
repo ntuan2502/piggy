@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ interface TransferFormData {
     amount: string;
     date: Date;
     note: string;
+    excludeFromReport: boolean;
 }
 
 const DRAFT_KEY = "piggy_draft_transfer";
@@ -58,6 +60,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                     amount: parsed.amount || "",
                     date: parsed.date ? new Date(parsed.date) : new Date(),
                     note: parsed.note || "",
+                    excludeFromReport: parsed.excludeFromReport || false,
                 };
             }
         } catch (e) {
@@ -70,6 +73,7 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
             note: "",
             fromWalletId: "",
             toWalletId: "",
+            excludeFromReport: false,
         };
     })();
 
@@ -143,7 +147,8 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                 data.toWalletId,
                 amount,
                 data.date,
-                data.note || undefined
+                data.note || undefined,
+                data.excludeFromReport || false
             );
 
             toast.success(t("transaction.transferSuccess"));
@@ -266,6 +271,21 @@ export function TransferForm({ onSuccess }: TransferFormProps) {
                     id="note"
                     {...register("note")}
                     placeholder={t("common.note") + "..."}
+                />
+            </div>
+
+            {/* Exclude from Report Toggle */}
+            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="flex items-center gap-2">
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <div className="space-y-0.5">
+                        <Label className="text-sm font-medium cursor-pointer">{t('transaction.excludeFromReport')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('transaction.excludeFromReportHint')}</p>
+                    </div>
+                </div>
+                <Switch
+                    checked={watch("excludeFromReport")}
+                    onCheckedChange={(checked) => setValue("excludeFromReport", checked)}
                 />
             </div>
 

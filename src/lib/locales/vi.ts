@@ -173,6 +173,8 @@ const vi = {
         delete: "Xóa giao dịch",
         deleteFailed: "Xóa giao dịch thất bại",
         deleteSuccess: "Đã xóa giao dịch",
+        excludeFromReport: "Không tính vào báo cáo",
+        excludeFromReportHint: "Giao dịch này sẽ không được tính vào thống kê thu/chi",
         description: "Ghi lại thu nhập hoặc chi tiêu mới.",
         edit: "Sửa giao dịch",
         editTransferNotSupported: "Chức năng sửa giao dịch chuyển khoản đang được phát triển. Vui lòng xóa và tạo lại.",

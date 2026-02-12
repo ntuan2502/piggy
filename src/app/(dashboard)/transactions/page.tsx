@@ -395,7 +395,9 @@ export default function TransactionsPage() {
             group.transactions.push(tx);
 
             const isPositive = tx.type === "income" || tx.type === "debt";
-            group.total += isPositive ? tx.amount : -tx.amount;
+            if (!tx.excludeFromReport) {
+                group.total += isPositive ? tx.amount : -tx.amount;
+            }
         });
 
         return groups;
@@ -407,6 +409,7 @@ export default function TransactionsPage() {
         let expense = 0;
 
         filteredTransactions.forEach(tx => {
+            if (tx.excludeFromReport) return;
             if (tx.type === "income") income += tx.amount;
             if (tx.type === "expense") expense += tx.amount;
         });

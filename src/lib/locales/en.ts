@@ -173,6 +173,8 @@ const en = {
         delete: "Delete Transaction",
         deleteFailed: "Failed to delete transaction",
         deleteSuccess: "Transaction deleted successfully",
+        excludeFromReport: "Exclude from report",
+        excludeFromReportHint: "This transaction will not be counted in income/expense statistics",
         description: "Record a new income or expense.",
         edit: "Edit Transaction",
         editTransferNotSupported: "Editing transfer transactions is not supported yet. Please delete and create a new transfer.",

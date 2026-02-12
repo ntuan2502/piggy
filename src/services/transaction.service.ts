@@ -69,7 +69,8 @@ export const addTransfer = async (
     toWalletId: string,
     amount: number,
     date: Date,
-    note?: string
+    note?: string,
+    excludeFromReport?: boolean
 ) => {
     try {
         await runTransaction(db, async (firestoreTransaction) => {
@@ -114,6 +115,7 @@ export const addTransfer = async (
                 isTransfer: true,
                 linkedTransactionId: incomeTransactionRef.id,
                 toWalletId: toWalletId,
+                excludeFromReport: excludeFromReport || false,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
             });
@@ -130,6 +132,7 @@ export const addTransfer = async (
                 isTransfer: true,
                 linkedTransactionId: expenseTransactionRef.id,
                 toWalletId: fromWalletId, // Store source wallet for reference
+                excludeFromReport: excludeFromReport || false,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
             });
@@ -276,6 +279,7 @@ export const updateTransaction = async (
                     amount: newAmount,
                     date: updates.date ?? oldData.date,
                     note: updates.note ?? oldData.note,
+                    excludeFromReport: updates.excludeFromReport ?? oldData.excludeFromReport ?? false,
                     updatedAt: serverTimestamp(),
                 };
 
