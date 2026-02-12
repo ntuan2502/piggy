@@ -50,7 +50,7 @@ export const seedCategories = async (userId: string) => {
         children?: SeedChild[];
     }
 
-    // Default Vietnamese Categories - Comprehensive set
+    // Default Vietnamese Categories - Consolidated Set
     const defaults: SeedParent[] = [
         // ═══════════════════════════════════
         // EXPENSE CATEGORIES
@@ -59,117 +59,93 @@ export const seedCategories = async (userId: string) => {
         // 1. Ăn uống
         {
             name: "Ăn uống", type: "expense", icon: "Utensils", color: "#ef4444", children: [
-                { name: "Cơm/Bún/Phở", icon: "Soup", color: "#f87171" },
-                { name: "Nhà hàng", icon: "UtensilsCrossed", color: "#dc2626" },
-                { name: "Cà phê/Trà", icon: "Coffee", color: "#92400e" },
+                { name: "Ăn tiệm/Nhà hàng", icon: "UtensilsCrossed", color: "#dc2626" },
+                { name: "Cafe & Đồ uống", icon: "Coffee", color: "#7c3aed" },
                 { name: "Đi chợ/Siêu thị", icon: "ShoppingBasket", color: "#65a30d" },
                 { name: "Ăn vặt", icon: "Cookie", color: "#f59e0b" },
-                { name: "Đồ uống", icon: "Wine", color: "#7c3aed" },
             ]
         },
 
         // 2. Mua sắm
         {
             name: "Mua sắm", type: "expense", icon: "ShoppingBag", color: "#3b82f6", children: [
-                { name: "Quần áo", icon: "Shirt", color: "#60a5fa" },
-                { name: "Điện tử/Công nghệ", icon: "Smartphone", color: "#6366f1" },
-                { name: "Đồ gia dụng", icon: "Refrigerator", color: "#0891b2" },
-                { name: "Mỹ phẩm/Làm đẹp", icon: "Sparkles", color: "#ec4899" },
+                { name: "Thời trang & Phụ kiện", icon: "Shirt", color: "#ec4899" },
+                { name: "Đồ công nghệ", icon: "Smartphone", color: "#6366f1" },
+                { name: "Mỹ phẩm & Làm đẹp", icon: "Sparkles", color: "#f472b6" },
+                { name: "Đồ gia dụng & Đời sống", icon: "Refrigerator", color: "#0891b2" },
             ]
         },
 
         // 3. Di chuyển
         {
             name: "Di chuyển", type: "expense", icon: "Car", color: "#f59e0b", children: [
-                { name: "Xăng xe", icon: "Fuel", color: "#d97706" },
-                { name: "Bảo dưỡng/Sửa xe", icon: "Wrench", color: "#b45309" },
-                { name: "Taxi/Grab", icon: "Bus", color: "#fbbf24" },
-                { name: "Gửi xe", icon: "CircleParking", color: "#ca8a04" },
-                { name: "Phí cầu đường", icon: "Route", color: "#a16207" },
+                { name: "Chi phí xe cộ (Xăng/Sửa/Gửi)", icon: "Fuel", color: "#d97706" },
+                { name: "Dịch vụ di chuyển (Taxi/Vé)", icon: "Bus", color: "#fbbf24" },
+                { name: "Bảo hiểm xe", icon: "Shield", color: "#b45309" },
             ]
         },
 
-        // 4. Nhà cửa
+        // 4. Nhà cửa & Hóa đơn
         {
-            name: "Nhà cửa", type: "expense", icon: "House", color: "#10b981", children: [
-                { name: "Tiền thuê/Trả góp", icon: "Building2", color: "#059669" },
-                { name: "Sửa chữa nhà", icon: "Hammer", color: "#047857" },
-                { name: "Nội thất/Trang trí", icon: "Lamp", color: "#34d399" },
+            name: "Nhà cửa & Hóa đơn", type: "expense", icon: "House", color: "#10b981", children: [
+                { name: "Tiền nhà/Trả góp", icon: "Building2", color: "#059669" },
+                { name: "Điện/Nước/Gas/Phí QL", icon: "Zap", color: "#eab308" },
+                { name: "Net/Phone/Streaming", icon: "Wifi", color: "#3b82f6" },
+                { name: "Sửa chữa & Trang trí", icon: "Hammer", color: "#047857" },
+                { name: "Dịch vụ gia đình", icon: "Sparkles", color: "#34d399" },
             ]
         },
 
-        // 5. Hóa đơn & Dịch vụ
-        {
-            name: "Hóa đơn & Dịch vụ", type: "expense", icon: "Receipt", color: "#06b6d4", children: [
-                { name: "Tiền điện", icon: "Zap", color: "#fbbf24" },
-                { name: "Tiền nước", icon: "Droplets", color: "#38bdf8" },
-                { name: "Internet/TV", icon: "Wifi", color: "#6366f1" },
-                { name: "Điện thoại", icon: "Phone", color: "#a855f7" },
-                { name: "Gas", icon: "Flame", color: "#f97316" },
-            ]
-        },
-
-        // 6. Sức khỏe
+        // 5. Sức khỏe
         {
             name: "Sức khỏe", type: "expense", icon: "Heart", color: "#f43f5e", children: [
-                { name: "Khám bệnh", icon: "Stethoscope", color: "#e11d48" },
-                { name: "Thuốc", icon: "Pill", color: "#be123c" },
-                { name: "Gym/Thể thao", icon: "Dumbbell", color: "#fb923c" },
+                { name: "Khám chữa bệnh & Thuốc", icon: "Stethoscope", color: "#e11d48" },
+                { name: "Thể thao & Gym", icon: "Dumbbell", color: "#fb923c" },
                 { name: "Bảo hiểm y tế", icon: "ShieldPlus", color: "#0d9488" },
             ]
         },
 
-        // 7. Giáo dục
+        // 6. Phát triển bản thân
         {
-            name: "Giáo dục", type: "expense", icon: "GraduationCap", color: "#6366f1", children: [
-                { name: "Học phí", icon: "BookOpen", color: "#818cf8" },
-                { name: "Sách/Tài liệu", icon: "BookMarked", color: "#a78bfa" },
-                { name: "Khóa học online", icon: "Laptop", color: "#7c3aed" },
+            name: "Phát triển bản thân", type: "expense", icon: "GraduationCap", color: "#6366f1", children: [
+                { name: "Giáo dục & Đào tạo", icon: "BookOpen", color: "#818cf8" },
+                { name: "Sách vở & Tài liệu", icon: "BookMarked", color: "#a78bfa" },
             ]
         },
 
-        // 8. Giải trí
+        // 7. Giải trí & Hưởng thụ
         {
-            name: "Giải trí", type: "expense", icon: "Gamepad2", color: "#8b5cf6", children: [
-                { name: "Xem phim/Ca nhạc", icon: "Film", color: "#a78bfa" },
+            name: "Giải trí & Hưởng thụ", type: "expense", icon: "Gamepad2", color: "#8b5cf6", children: [
+                { name: "Vui chơi & Giải trí", icon: "Ticket", color: "#d946ef" },
                 { name: "Du lịch", icon: "Plane", color: "#38bdf8" },
-                { name: "Game/Ứng dụng", icon: "Joystick", color: "#c084fc" },
-                { name: "Sách/Manga", icon: "Library", color: "#d946ef" },
+                { name: "Sở thích (Hobby)", icon: "Palette", color: "#c084fc" },
             ]
         },
 
-        // 9. Gia đình & Xã hội
+        // 8. Gia đình & Xã hội
         {
             name: "Gia đình & Xã hội", type: "expense", icon: "Users", color: "#ec4899", children: [
-                { name: "Biếu cha mẹ", icon: "HeartHandshake", color: "#f472b6" },
-                { name: "Nuôi con", icon: "Baby", color: "#fb7185" },
-                { name: "Quà tặng", icon: "Gift", color: "#f9a8d4" },
+                { name: "Con cái", icon: "Baby", color: "#fb7185" },
+                { name: "Biếu tặng & Hiếu hỉ", icon: "Gift", color: "#f472b6" },
                 { name: "Thú cưng", icon: "Dog", color: "#c084fc" },
                 { name: "Từ thiện", icon: "HandHeart", color: "#34d399" },
-                { name: "Đám cưới/Đám ma", icon: "PartyPopper", color: "#fbbf24" },
             ]
         },
 
-        // 10. Chi phí Tết
+        // 9. Đầu tư & Tích lũy
         {
-            name: "Chi phí Tết", type: "expense", icon: "Sparkles", color: "#dc2626", children: [
-                { name: "Bánh chưng/Mứt/Kẹo", icon: "CakeSlice", color: "#f87171" },
-                { name: "Thực phẩm Tết", icon: "Ham", color: "#ef4444" },
-                { name: "Quà biếu Tết", icon: "Package", color: "#b91c1c" },
-                { name: "Lì xì", icon: "HandCoins", color: "#fbbf24" },
-                { name: "Hoa/Cây cảnh", icon: "Flower2", color: "#22c55e" },
-                { name: "Quần áo Tết", icon: "Ribbon", color: "#ec4899" },
-                { name: "Tiệc tất niên", icon: "PartyPopper", color: "#f97316" },
+            name: "Đầu tư & Tích lũy", type: "expense", icon: "PiggyBank", color: "#eab308", children: [
+                { name: "Đầu tư tài chính (Vàng/CK/Crypto)", icon: "TrendingUp", color: "#f59e0b" },
+                { name: "Tiết kiệm", icon: "Wallet", color: "#854d0e" },
+                { name: "Bảo hiểm nhân thọ", icon: "ShieldAlert", color: "#ca8a04" },
+                { name: "Bất động sản", icon: "Building2", color: "#b45309" },
             ]
         },
 
-        // 11. Chi phí khác
+        // 10. Khác
         {
-            name: "Chi phí khác", type: "expense", icon: "CircleDollarSign", color: "#78716c", children: [
-                { name: "Thuế", icon: "Landmark", color: "#57534e" },
-                { name: "Phí ngân hàng", icon: "CreditCard", color: "#a8a29e" },
-                { name: "Bảo hiểm", icon: "ShieldCheck", color: "#0d9488" },
-                { name: "Phí khác", icon: "ReceiptText", color: "#78716c" },
+            name: "Khác", type: "expense", icon: "CircleDollarSign", color: "#78716c", children: [
+                { name: "Chi phí khác", icon: "ReceiptText", color: "#a8a29e" },
             ]
         },
 
@@ -181,46 +157,25 @@ export const seedCategories = async (userId: string) => {
         {
             name: "Lương & Thưởng", type: "income", icon: "Briefcase", color: "#22c55e", children: [
                 { name: "Lương chính", icon: "Banknote", color: "#4ade80" },
-                { name: "Thưởng", icon: "Trophy", color: "#fbbf24" },
-                { name: "Phụ cấp", icon: "HandCoins", color: "#34d399" },
-                { name: "OT/Tăng ca", icon: "Clock", color: "#86efac" },
+                { name: "Thưởng & Phụ cấp", icon: "Trophy", color: "#fbbf24" },
             ]
         },
 
-        // 2. Kinh doanh
+        // 2. Kinh doanh & Đầu tư
         {
-            name: "Kinh doanh", type: "income", icon: "TrendingUp", color: "#3b82f6", children: [
-                { name: "Doanh thu", icon: "BadgeDollarSign", color: "#60a5fa" },
-                { name: "Hoa hồng", icon: "Percent", color: "#93c5fd" },
-                { name: "Freelance", icon: "Laptop", color: "#818cf8" },
+            name: "Kinh doanh & Đầu tư", type: "income", icon: "TrendingUp", color: "#3b82f6", children: [
+                { name: "Doanh thu kinh doanh", icon: "BadgeDollarSign", color: "#60a5fa" },
+                { name: "Lãi đầu tư/Tiết kiệm", icon: "PiggyBank", color: "#eab308" },
+                { name: "Cho thuê/BĐS", icon: "House", color: "#d97706" },
             ]
         },
 
-        // 3. Đầu tư & Tài chính
-        {
-            name: "Đầu tư & Tài chính", type: "income", icon: "Wallet", color: "#f59e0b", children: [
-                { name: "Lãi tiết kiệm", icon: "PiggyBank", color: "#fbbf24" },
-                { name: "Cổ tức", icon: "ChartBar", color: "#f97316" },
-                { name: "Lãi đầu tư", icon: "TrendingUp", color: "#eab308" },
-                { name: "Cho thuê nhà", icon: "House", color: "#d97706" },
-            ]
-        },
-
-        // 4. Thu nhập Tết
-        {
-            name: "Thu nhập Tết", type: "income", icon: "Sparkles", color: "#dc2626", children: [
-                { name: "Thưởng Tết", icon: "Trophy", color: "#fbbf24" },
-                { name: "Lì xì nhận được", icon: "HandCoins", color: "#ef4444" },
-                { name: "Bán hàng Tết", icon: "ShoppingBag", color: "#f97316" },
-            ]
-        },
-
-        // 5. Thu nhập khác
+        // 3. Thu nhập khác
         {
             name: "Thu nhập khác", type: "income", icon: "Coins", color: "#a855f7", children: [
-                { name: "Quà được tặng", icon: "Gift", color: "#c084fc" },
-                { name: "Bán đồ cũ", icon: "Tag", color: "#d946ef" },
-                { name: "Hoàn tiền", icon: "RotateCcw", color: "#e879f9" },
+                { name: "Quà tặng/Lì xì", icon: "Gift", color: "#c084fc" },
+                { name: "Thanh lý đồ cũ", icon: "Tag", color: "#d946ef" },
+                { name: "Thu nhập khác", icon: "RotateCcw", color: "#e879f9" },
             ]
         },
     ];
