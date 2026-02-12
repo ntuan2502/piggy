@@ -61,7 +61,7 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                 </div>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                <ChartContainer config={chartConfig} className="h-[350px] w-full">
                     <AreaChart data={data} margin={{ left: 0, right: 12, top: 12 }}>
                         <defs>
                             <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
