@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pencil, Trash2, Plus, GripVertical, RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -169,6 +169,7 @@ export function CategoryManager() {
 
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+    const [resetConfirmText, setResetConfirmText] = useState("");
     const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
     // Filtered and sorted categories
@@ -308,9 +309,11 @@ export function CategoryManager() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className={cn("h-9 w-9", categories.length > 0 && "pointer-events-none opacity-50")}
-                                    onClick={() => setResetConfirmOpen(true)}
-                                    disabled={categories.length > 0}
+                                    className="h-9 w-9"
+                                    onClick={() => {
+                                        setResetConfirmOpen(true);
+                                        setResetConfirmText("");
+                                    }}
                                 >
                                     <RotateCcw className="w-4 h-4" />
                                 </Button>
@@ -403,25 +406,40 @@ export function CategoryManager() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{t('category.confirmReset')}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {t('category.resetDescription')}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                        <AlertDialogAction
+            <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('category.confirmReset')}</DialogTitle>
+                        <DialogDescription>
+                            {t('category.resetDetailedWarning')}
+                            <br />
+                            <span className="block mt-2 font-medium text-foreground">
+                                {t('category.typeConfirm')} <span className="text-red-500 font-bold">CONFIRM</span>
+                            </span>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-2">
+                        <Input
+                            value={resetConfirmText}
+                            onChange={(e) => setResetConfirmText(e.target.value.toUpperCase())}
+                            placeholder="Type CONFIRM here"
+                            className="text-center tracking-widest uppercase"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setResetConfirmOpen(false)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button
                             onClick={handleReset}
-                            className="bg-red-500 hover:bg-red-600"
+                            disabled={resetConfirmText !== "CONFIRM"}
+                            variant="destructive"
                         >
                             {t('common.confirm')}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="max-w-lg">

@@ -35,6 +35,8 @@ const en = {
         resetDescription: "This will delete all current categories and restore the default set. This action cannot be undone.",
         resetDisabledHelp: "Delete all categories to restore defaults",
         resetSuccess: "Categories reset successfully",
+        resetDetailedWarning: "This will delete all current categories and restore the default set. Old transaction data might lose category association.",
+        typeConfirm: "Please type CONFIRM to proceed.",
         seeding: "Seeding...",
         select: "Select category",
         title: "Categories",

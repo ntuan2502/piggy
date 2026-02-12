@@ -35,6 +35,8 @@ const vi = {
         resetDescription: "Hành động này sẽ xóa tất cả danh mục hiện tại và khôi phục lại danh sách danh mục mẫu. Bạn không thể hoàn tác.",
         resetDisabledHelp: "Xóa hết danh mục để khôi phục",
         resetSuccess: "Đã khôi phục danh mục thành công",
+        resetDetailedWarning: "Hành động này sẽ xóa toàn bộ danh mục hiện tại và tạo lại bộ danh mục mặc định. Dữ liệu giao dịch cũ có thể bị mất liên kết danh mục.",
+        typeConfirm: "Vui lòng nhập CONFIRM để xác nhận.",
         seeding: "Đang tạo dữ liệu...",
         select: "Chọn danh mục",
         title: "Danh mục",
