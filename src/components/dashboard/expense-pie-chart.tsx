@@ -4,6 +4,10 @@ import { useMemo } from "react";
 import { Label, Pie, PieChart } from "recharts";
 import { useTranslation } from "react-i18next";
 import { formatVNCurrency } from "@/lib/format";
+import { Transaction } from "@/types";
+import { REPORT_TRANSACTION_LIMIT } from "@/lib/constants";
+import { format } from "date-fns";
+import { vi, enUS } from "date-fns/locale";
 
 import {
     Card,
@@ -16,11 +20,11 @@ import {
     ChartConfig,
     ChartContainer,
     ChartTooltip,
-    ChartTooltipContent,
 } from "@/components/ui/chart";
 
-export function ExpensePieChart({ data }: { data: { category: string; amount: number; fill: string }[] }) {
-    const { t } = useTranslation();
+export function ExpensePieChart({ data }: { data: { category: string; amount: number; fill: string; transactions: Transaction[] }[] }) {
+    const { t, i18n } = useTranslation();
+    const locale = i18n.language === 'vi' ? vi : enUS;
     const chartConfig = {
         amount: {
             label: t('common.amount'),
@@ -47,12 +51,44 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
                     <PieChart>
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent hideLabel formatter={(value, name) => (
-                                <div className="flex items-center justify-between gap-4 w-full">
-                                    <span className="text-muted-foreground">{name}:</span>
-                                    <span className="font-mono font-medium">{formatVNCurrency(Number(value))}</span>
-                                </div>
-                            )} />}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    const data = payload[0].payload;
+                                    const topTransactions = data.transactions.slice(0, REPORT_TRANSACTION_LIMIT);
+
+                                    return (
+                                        <div className="bg-background border rounded-lg p-3 shadow-lg text-xs w-[280px] z-50">
+                                            <div className="flex items-center justify-between mb-2 pb-2 border-b">
+                                                <span className="font-bold text-sm" style={{ color: data.fill }}>{data.category}</span>
+                                                <span className="font-mono font-bold text-sm">{formatVNCurrency(data.amount)}</span>
+                                            </div>
+
+                                            {topTransactions.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <span className="text-[10px] text-muted-foreground font-semibold uppercase">{t('transaction.recent')}</span>
+                                                    {topTransactions.map((tx: Transaction, i: number) => (
+                                                        <div key={i} className="flex justify-between items-start gap-2">
+                                                            <div className="flex flex-col gap-0.5 overflow-hidden flex-1">
+                                                                <span className="truncate opacity-80" title={tx.note}>{tx.note || t('common.none')}</span>
+                                                                <span className="text-[10px] opacity-60">{format(new Date(tx.date), "dd/MM", { locale })}</span>
+                                                            </div>
+                                                            <span className="font-medium whitespace-nowrap text-red-500">
+                                                                -{formatVNCurrency(tx.amount)}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                    {data.transactions.length > REPORT_TRANSACTION_LIMIT && (
+                                                        <p className="text-[10px] text-center text-muted-foreground italic pt-1">
+                                                            (+{data.transactions.length - REPORT_TRANSACTION_LIMIT} {t('common.more')})
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
                         />
                         <Pie
                             data={data}

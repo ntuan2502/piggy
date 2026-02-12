@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { PieChart } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { Transaction } from "@/types";
 
@@ -53,20 +52,27 @@ export default function ReportsPage() {
 
     // Prepare Pie Data
     const pieData = useMemo(() => {
-        const expenseMap: Record<string, number> = {};
+        const expenseMap: Record<string, { amount: number, transactions: Transaction[] }> = {};
         const colors = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6", "#d946ef", "#f43f5e"];
 
         filteredTransactions.filter(tx => tx.type === 'expense').forEach(tx => {
             const catName = categories.find(c => c.id === tx.categoryId)?.name || t('category.unknown');
-            expenseMap[catName] = (expenseMap[catName] || 0) + tx.amount;
+
+            if (!expenseMap[catName]) {
+                expenseMap[catName] = { amount: 0, transactions: [] };
+            }
+
+            expenseMap[catName].amount += tx.amount;
+            expenseMap[catName].transactions.push(tx);
         });
 
         // Filter out zero amounts and sort by amount desc
         return Object.entries(expenseMap)
-            .map(([category, amount], index) => ({
+            .map(([category, data], index) => ({
                 category,
-                amount,
+                amount: data.amount,
                 fill: colors[index % colors.length],
+                transactions: data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             }))
             .filter(item => item.amount > 0)
             .sort((a, b) => b.amount - a.amount);
@@ -106,11 +112,7 @@ export default function ReportsPage() {
 
     return (
         <div className="space-y-6 pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <PieChart className="h-8 w-8" />
-                    <h2 className="text-3xl font-bold tracking-tight">{t('report.title')}</h2>
-                </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
                 <DateRangePicker date={dateRange} setDate={setDateRange} />
             </div>
 

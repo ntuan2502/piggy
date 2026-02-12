@@ -11,44 +11,42 @@ export function StatsCards({ income, expense, net, className }: { income: number
     return (
         <div className={cn("grid gap-4 grid-cols-1 md:grid-cols-3", className)}>
             {/* Income Card */}
-            <Card className="border-none bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 overflow-hidden">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-emerald-100">{t('transaction.income')}</CardTitle>
-                    <div className="rounded-full bg-white/20 p-2">
-                        <ArrowUpIcon className="h-4 w-4 text-white" />
+                    <CardTitle className="text-sm font-medium">{t('transaction.income')}</CardTitle>
+                    <div className="rounded-full bg-green-500/10 p-2">
+                        <ArrowUpIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{formatVNCurrency(income)}</div>
-                    {/* <p className="text-xs text-emerald-100 mt-1 opacity-80">+12% {t('report.fromLastMonth')}</p> */}
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatVNCurrency(income)}</div>
                 </CardContent>
             </Card>
 
             {/* Expense Card */}
-            <Card className="border-none bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/20">
+            <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 overflow-hidden">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-red-100">{t('transaction.expense')}</CardTitle>
-                    <div className="rounded-full bg-white/20 p-2">
-                        <ArrowDownIcon className="h-4 w-4 text-white" />
+                    <CardTitle className="text-sm font-medium">{t('transaction.expense')}</CardTitle>
+                    <div className="rounded-full bg-red-500/10 p-2">
+                        <ArrowDownIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{formatVNCurrency(expense)}</div>
-                    {/* <p className="text-xs text-red-100 mt-1 opacity-80">-4% {t('report.fromLastMonth')}</p> */}
+                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">{formatVNCurrency(expense)}</div>
                 </CardContent>
             </Card>
 
             {/* Net Worth Card */}
-            <Card className="border-none bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 overflow-hidden">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-blue-100">{t('report.periodBalance')}</CardTitle>
-                    <div className="rounded-full bg-white/20 p-2">
-                        <Wallet className="h-4 w-4 text-white" />
+                    <CardTitle className="text-sm font-medium">{t('report.periodBalance')}</CardTitle>
+                    <div className="rounded-full bg-blue-500/10 p-2">
+                        <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{formatVNCurrency(net)}</div>
-                    <p className="text-xs text-blue-100 mt-1 opacity-80">{t('report.availableBalance')}</p>
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatVNCurrency(net)}</div>
+                    <p className="text-xs text-muted-foreground mt-1 opacity-80">{t('report.availableBalance')}</p>
                 </CardContent>
             </Card>
         </div>

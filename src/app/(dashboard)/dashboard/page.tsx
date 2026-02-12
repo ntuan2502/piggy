@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatVNCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRightLeft, LayoutDashboard } from "lucide-react";
+import { Plus, ArrowRightLeft, LayoutDashboard, Wallet, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { TransactionForm } from "@/components/forms/transaction-form";
 import { TransferForm } from "@/components/forms/transfer-form";
@@ -67,6 +67,9 @@ export default function DashboardPage() {
                 <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{t('wallet.netWorth')}</CardTitle>
+                        <div className="rounded-full bg-blue-500/10 p-2">
+                            <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -77,6 +80,9 @@ export default function DashboardPage() {
                 <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{t('wallet.availableTotal')}</CardTitle>
+                        <div className="rounded-full bg-green-500/10 p-2">
+                            <ArrowUpIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -87,6 +93,9 @@ export default function DashboardPage() {
                 <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{t('wallet.creditTotal')}</CardTitle>
+                        <div className="rounded-full bg-red-500/10 p-2">
+                            <ArrowDownIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-red-600 dark:text-red-400">

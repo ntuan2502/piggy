@@ -11,6 +11,7 @@ import { useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Transaction } from "@/types"
+import { REPORT_TRANSACTION_LIMIT } from "@/lib/constants"
 
 interface TrendData {
     date: string;
@@ -60,7 +61,7 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                 </div>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                <ChartContainer config={chartConfig} className="h-[250px] w-full">
                     <AreaChart data={data} margin={{ left: 0, right: 12, top: 12 }}>
                         <defs>
                             <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
@@ -109,7 +110,7 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                                         if (!isIncome && !showExpense) return false;
                                         return true;
                                     });
-                                    const topTransactions = filteredTransactions.slice(0, 20); // Show top 20
+                                    const topTransactions = filteredTransactions.slice(0, REPORT_TRANSACTION_LIMIT); // Show top 20
                                     return (
                                         <div className="bg-background border rounded-lg p-3 shadow-lg text-xs w-[280px] z-50">
                                             <p className="font-bold mb-2 text-sm border-b pb-2">{format(new Date(label), "dd 'thg' MM, yyyy", { locale })}</p>
@@ -140,9 +141,9 @@ export function TrendLineChart({ data }: { data: TrendData[] }) {
                                                             </span>
                                                         </div>
                                                     ))}
-                                                    {filteredTransactions.length > 20 && (
+                                                    {filteredTransactions.length > REPORT_TRANSACTION_LIMIT && (
                                                         <p className="text-[10px] text-center text-muted-foreground italic pt-1">
-                                                            (+{filteredTransactions.length - 20} {t('common.more')})
+                                                            (+{filteredTransactions.length - REPORT_TRANSACTION_LIMIT} {t('common.more')})
                                                         </p>
                                                     )}
                                                 </div>

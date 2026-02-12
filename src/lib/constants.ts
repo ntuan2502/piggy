@@ -1,0 +1,1 @@
+export const REPORT_TRANSACTION_LIMIT = 20;
