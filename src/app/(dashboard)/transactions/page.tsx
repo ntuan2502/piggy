@@ -12,6 +12,8 @@ import {
     Loader2,
     ListFilter,
     Calendar,
+    Plus,
+    ArrowRightLeft,
 } from "lucide-react";
 import {
     format,
@@ -40,6 +42,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
     AlertDialog,
@@ -65,6 +68,7 @@ import {
 } from "@/components/ui/popover";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { TransactionForm } from "@/components/forms/transaction-form";
+import { TransferForm } from "@/components/forms/transfer-form";
 import { Separator } from "@/components/ui/separator";
 
 import { useTransactions } from "@/hooks/use-transactions";
@@ -94,6 +98,8 @@ export default function TransactionsPage() {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
     const [isAutoCategorizing, setIsAutoCategorizing] = useState(false);
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
 
     // Filter State
     const [periodType, setPeriodType] = useState<PeriodType>("month");
@@ -414,197 +420,130 @@ export default function TransactionsPage() {
 
     return (
         <div className="space-y-4">
-            {/* --- Main Toolbar --- */}
-            <div className="sticky top-0 bg-background/95 backdrop-blur z-20 py-2 -mx-4 px-4 border-b space-y-3 xl:space-y-0 xl:flex xl:items-center xl:justify-between">
-
-                {/* --- MOBILE LAYOUT (3 Rows) --- */}
-                <div className="xl:hidden flex flex-col gap-2">
-                    {/* Row 1: Time Picker (Left) + Auto Categorize (Right) */}
-                    <div className="flex items-center justify-between">
-                        {/* Time Selector */}
-                        <div className="flex items-center rounded-md border bg-card shadow-sm shrink-0 h-8">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-r-none border-r" onClick={() => navigatePeriod('prev')}>
-                                <ChevronLeft className="h-4 w-4" />
+            {/* --- Sticky Header (Actions + Filters) --- */}
+            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur -mx-4 px-4 py-2 border-b space-y-3">
+                {/* Actions Row */}
+                <div className="flex justify-end gap-2 w-full">
+                    <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="flex-1 md:flex-none">
+                                <ArrowRightLeft className="mr-2 h-4 w-4" /> {t('transaction.transfer')}
                             </Button>
-
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 px-2 min-w-[90px] font-medium rounded-none text-xs">
-                                        <Calendar className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                                        {periodLabel}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-3" align="start">
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-1 rounded-md bg-muted p-1">
-                                            {(["month", "quarter", "year"] as PeriodType[]).map((type) => (
-                                                <Button
-                                                    key={type}
-                                                    variant={periodType === type ? "default" : "ghost"}
-                                                    size="sm"
-                                                    onClick={() => { setPeriodType(type); setSelectedDate(new Date()); }}
-                                                    className="h-7 flex-1 text-xs"
-                                                >
-                                                    {type === "month" ? t("common.month") : type === "quarter" ? t("common.quarter") : t("common.year")}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                        <div className="text-center text-sm text-muted-foreground pt-2 border-t">
-                                            <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelectedDate(new Date())}>
-                                                {t("common.today")}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" onClick={() => navigatePeriod('next')}>
-                                <ChevronRight className="h-4 w-4" />
+                        </DialogTrigger>
+                        <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle>{t('transaction.transfer')}</DialogTitle>
+                                <DialogDescription>{t('transaction.transferDescription')}</DialogDescription>
+                            </DialogHeader>
+                            <TransferForm onSuccess={() => setIsTransferDialogOpen(false)} />
+                        </DialogContent>
+                    </Dialog>
+                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="flex-1 md:flex-none">
+                                <Plus className="mr-2 h-4 w-4" /> {t('transaction.add')}
                             </Button>
-                        </div>
-
-                        {/* Auto Categorize Button */}
-                        {uncategorizedTransactions.length > 0 && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleAutoCategorize}
-                                disabled={isAutoCategorizing}
-                                className="h-8 px-2 text-xs gap-1"
-                            >
-                                {isAutoCategorizing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-purple-500" />}
-                                <span>{t('common.autoCategorize')} ({uncategorizedTransactions.length})</span>
-                            </Button>
-                        )}
-                    </div>
-
-                    {/* Row 2: Search Input (Full Width) */}
-                    <div className="relative w-full">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        <Input
-                            placeholder={t("transaction.searchPlaceholder")}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="h-9 pl-8 text-sm w-full bg-background"
-                        />
-                        {searchQuery && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
-                                onClick={() => setSearchQuery("")}
-                            >
-                                <X className="h-3 w-3" />
-                            </Button>
-                        )}
-                    </div>
-
-                    {/* Row 3: Filter Selects (Scrollable) */}
-                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 -mx-4 px-4 mask-linear-fade">
-                        {/* Quick Filters */}
-                        <Select value={typeFilter} onValueChange={setTypeFilter}>
-                            <SelectTrigger className="h-8 w-[100px] text-xs shrink-0">
-                                <SelectValue placeholder={t("transaction.item")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t("transaction.all")}</SelectItem>
-                                <SelectItem value="income">{t("transaction.income")}</SelectItem>
-                                <SelectItem value="expense">{t("transaction.expense")}</SelectItem>
-                                <SelectItem value="debt">{t("transaction.debt")}</SelectItem>
-                                <SelectItem value="loan">{t("transaction.loan")}</SelectItem>
-                            </SelectContent>
-                        </Select>
-
-                        <Select value={walletFilter} onValueChange={setWalletFilter}>
-                            <SelectTrigger className="h-8 w-[100px] text-xs shrink-0">
-                                <SelectValue placeholder={t("wallet.title")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t("transaction.all")}</SelectItem>
-                                {wallets.map(wallet => (
-                                    <SelectItem key={wallet.id} value={wallet.id}>{wallet.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="h-8 w-[120px] text-xs shrink-0">
-                                <SelectValue placeholder={t("category.title")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t("transaction.all")}</SelectItem>
-                                {rootCategories.map(cat => (
-                                    <SelectItem key={cat.id} value={cat.id}>
-                                        <div className="flex items-center gap-2">
-                                            <CategoryIcon iconName={cat.icon} color={cat.color} />
-                                            <span>{cat.name}</span>
-                                        </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        {hasActiveFilters && (
-                            <Button variant="ghost" size="icon" onClick={clearFilters} className="h-8 w-8 text-destructive shrink-0">
-                                <X className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle>{t('transaction.add')}</DialogTitle>
+                                <DialogDescription>{t('transaction.description')}</DialogDescription>
+                            </DialogHeader>
+                            <TransactionForm onSuccess={() => setIsAddDialogOpen(false)} />
+                        </DialogContent>
+                    </Dialog>
                 </div>
 
+                {/* Filters Row */}
+                <div className="xl:flex xl:items-center xl:justify-between">
 
-                {/* --- DESKTOP LAYOUT (Flex Row) --- */}
-                <div className="hidden xl:flex items-center justify-between w-full">
+                    {/* --- MOBILE LAYOUT (3 Rows) --- */}
+                    <div className="xl:hidden flex flex-col gap-2">
+                        {/* Row 1: Time Picker (Left) + Auto Categorize (Right) */}
+                        <div className="flex items-center justify-between">
+                            {/* Time Selector */}
+                            <div className="flex items-center rounded-md border bg-card shadow-sm shrink-0 h-8">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-r-none border-r" onClick={() => navigatePeriod('prev')}>
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
 
-                    {/* Left: Time & Filters */}
-                    <div className="flex items-center gap-3">
-                        {/* Time Selector */}
-                        <div className="flex items-center rounded-md border bg-card shadow-sm shrink-0 h-9">
-                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-r-none border-r" onClick={() => navigatePeriod('prev')}>
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-9 px-3 min-w-[120px] font-medium rounded-none text-sm">
-                                        <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                                        {periodLabel}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-3" align="start">
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-1 rounded-md bg-muted p-1">
-                                            {(["month", "quarter", "year"] as PeriodType[]).map((type) => (
-                                                <Button
-                                                    key={type}
-                                                    variant={periodType === type ? "default" : "ghost"}
-                                                    size="sm"
-                                                    onClick={() => { setPeriodType(type); setSelectedDate(new Date()); }}
-                                                    className="h-7 flex-1 text-xs"
-                                                >
-                                                    {type === "month" ? t("common.month") : type === "quarter" ? t("common.quarter") : t("common.year")}
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 px-2 min-w-[90px] font-medium rounded-none text-xs">
+                                            <Calendar className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                            {periodLabel}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-3" align="start">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-1 rounded-md bg-muted p-1">
+                                                {(["month", "quarter", "year"] as PeriodType[]).map((type) => (
+                                                    <Button
+                                                        key={type}
+                                                        variant={periodType === type ? "default" : "ghost"}
+                                                        size="sm"
+                                                        onClick={() => { setPeriodType(type); setSelectedDate(new Date()); }}
+                                                        className="h-7 flex-1 text-xs"
+                                                    >
+                                                        {type === "month" ? t("common.month") : type === "quarter" ? t("common.quarter") : t("common.year")}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                            <div className="text-center text-sm text-muted-foreground pt-2 border-t">
+                                                <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelectedDate(new Date())}>
+                                                    {t("common.today")}
                                                 </Button>
-                                            ))}
+                                            </div>
                                         </div>
-                                        <div className="text-center text-sm text-muted-foreground pt-2 border-t">
-                                            <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelectedDate(new Date())}>
-                                                {t("common.today")}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
+                                    </PopoverContent>
+                                </Popover>
 
-                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-l-none border-l" onClick={() => navigatePeriod('next')}>
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" onClick={() => navigatePeriod('next')}>
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+
+                            {/* Auto Categorize Button */}
+                            {uncategorizedTransactions.length > 0 && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleAutoCategorize}
+                                    disabled={isAutoCategorizing}
+                                    className="h-8 px-2 text-xs gap-1"
+                                >
+                                    {isAutoCategorizing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-purple-500" />}
+                                    <span>{t('common.autoCategorize')} ({uncategorizedTransactions.length})</span>
+                                </Button>
+                            )}
                         </div>
 
-                        <Separator orientation="vertical" className="h-6 shrink-0" />
+                        {/* Row 2: Search Input (Full Width) */}
+                        <div className="relative w-full">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                                placeholder={t("transaction.searchPlaceholder")}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="h-9 pl-8 text-sm w-full bg-background"
+                            />
+                            {searchQuery && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setSearchQuery("")}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            )}
+                        </div>
 
-                        <div className="flex items-center gap-2">
+                        {/* Row 3: Filter Selects (Scrollable) */}
+                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 -mx-4 px-4 mask-linear-fade">
+                            {/* Quick Filters */}
                             <Select value={typeFilter} onValueChange={setTypeFilter}>
-                                <SelectTrigger className="h-9 w-[120px] text-sm">
+                                <SelectTrigger className="h-8 w-[100px] text-xs shrink-0">
                                     <SelectValue placeholder={t("transaction.item")} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -617,7 +556,7 @@ export default function TransactionsPage() {
                             </Select>
 
                             <Select value={walletFilter} onValueChange={setWalletFilter}>
-                                <SelectTrigger className="h-9 w-[120px] text-sm">
+                                <SelectTrigger className="h-8 w-[100px] text-xs shrink-0">
                                     <SelectValue placeholder={t("wallet.title")} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -629,7 +568,7 @@ export default function TransactionsPage() {
                             </Select>
 
                             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                <SelectTrigger className="h-9 w-[140px] text-sm">
+                                <SelectTrigger className="h-8 w-[120px] text-xs shrink-0">
                                     <SelectValue placeholder={t("category.title")} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -646,46 +585,148 @@ export default function TransactionsPage() {
                             </Select>
 
                             {hasActiveFilters && (
-                                <Button variant="ghost" size="icon" onClick={clearFilters} className="h-9 w-9 text-destructive shrink-0">
+                                <Button variant="ghost" size="icon" onClick={clearFilters} className="h-8 w-8 text-destructive shrink-0">
                                     <X className="h-4 w-4" />
                                 </Button>
                             )}
                         </div>
                     </div>
 
-                    {/* Right: Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
-                        {uncategorizedTransactions.length > 0 && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleAutoCategorize}
-                                disabled={isAutoCategorizing}
-                                className="h-9 text-sm gap-2"
-                            >
-                                {isAutoCategorizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-purple-500" />}
-                                <span>{t('common.autoCategorize')} ({uncategorizedTransactions.length})</span>
-                            </Button>
-                        )}
 
-                        <div className="relative w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder={t("transaction.searchPlaceholder")}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="h-9 pl-9 text-sm w-full bg-background"
-                            />
-                            {searchQuery && (
+                    {/* --- DESKTOP LAYOUT (Flex Row) --- */}
+                    <div className="hidden xl:flex items-center justify-between w-full">
+
+                        {/* Left: Time & Filters */}
+                        <div className="flex items-center gap-3">
+                            {/* Time Selector */}
+                            <div className="flex items-center rounded-md border bg-card shadow-sm shrink-0 h-9">
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-r-none border-r" onClick={() => navigatePeriod('prev')}>
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-9 px-3 min-w-[120px] font-medium rounded-none text-sm">
+                                            <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                                            {periodLabel}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-3" align="start">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-1 rounded-md bg-muted p-1">
+                                                {(["month", "quarter", "year"] as PeriodType[]).map((type) => (
+                                                    <Button
+                                                        key={type}
+                                                        variant={periodType === type ? "default" : "ghost"}
+                                                        size="sm"
+                                                        onClick={() => { setPeriodType(type); setSelectedDate(new Date()); }}
+                                                        className="h-7 flex-1 text-xs"
+                                                    >
+                                                        {type === "month" ? t("common.month") : type === "quarter" ? t("common.quarter") : t("common.year")}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                            <div className="text-center text-sm text-muted-foreground pt-2 border-t">
+                                                <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelectedDate(new Date())}>
+                                                    {t("common.today")}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-l-none border-l" onClick={() => navigatePeriod('next')}>
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+
+                            <Separator orientation="vertical" className="h-6 shrink-0" />
+
+                            <div className="flex items-center gap-2">
+                                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                                    <SelectTrigger className="h-9 w-[120px] text-sm">
+                                        <SelectValue placeholder={t("transaction.item")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t("transaction.all")}</SelectItem>
+                                        <SelectItem value="income">{t("transaction.income")}</SelectItem>
+                                        <SelectItem value="expense">{t("transaction.expense")}</SelectItem>
+                                        <SelectItem value="debt">{t("transaction.debt")}</SelectItem>
+                                        <SelectItem value="loan">{t("transaction.loan")}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={walletFilter} onValueChange={setWalletFilter}>
+                                    <SelectTrigger className="h-9 w-[120px] text-sm">
+                                        <SelectValue placeholder={t("wallet.title")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t("transaction.all")}</SelectItem>
+                                        {wallets.map(wallet => (
+                                            <SelectItem key={wallet.id} value={wallet.id}>{wallet.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                    <SelectTrigger className="h-9 w-[140px] text-sm">
+                                        <SelectValue placeholder={t("category.title")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t("transaction.all")}</SelectItem>
+                                        {rootCategories.map(cat => (
+                                            <SelectItem key={cat.id} value={cat.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <CategoryIcon iconName={cat.icon} color={cat.color} />
+                                                    <span>{cat.name}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {hasActiveFilters && (
+                                    <Button variant="ghost" size="icon" onClick={clearFilters} className="h-9 w-9 text-destructive shrink-0">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right: Actions */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            {uncategorizedTransactions.length > 0 && (
                                 <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
-                                    onClick={() => setSearchQuery("")}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleAutoCategorize}
+                                    disabled={isAutoCategorizing}
+                                    className="h-9 text-sm gap-2"
                                 >
-                                    <X className="h-3 w-3" />
+                                    {isAutoCategorizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-purple-500" />}
+                                    <span>{t('common.autoCategorize')} ({uncategorizedTransactions.length})</span>
                                 </Button>
                             )}
+
+                            <div className="relative w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder={t("transaction.searchPlaceholder")}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="h-9 pl-9 text-sm w-full bg-background"
+                                />
+                                {searchQuery && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                        onClick={() => setSearchQuery("")}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
