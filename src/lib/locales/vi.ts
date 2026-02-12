@@ -129,7 +129,11 @@ const vi = {
         overview: "Tổng hợp",
         title: "Báo cáo",
         topCategories: "Top Danh Mục",
-        trend: "Xu hướng"
+        trend: "Xu hướng",
+        periodBalance: "Số dư kỳ này",
+        income: "Thu nhập",
+        expense: "Chi tiêu",
+        net: "Hiệu số"
     },
     settings: {
         dataDesc: "Quản lý dữ liệu ứng dụng.",
@@ -252,7 +256,8 @@ const vi = {
         typeCredit: "Tài khoản tín dụng",
         unknown: "Ví không xác định",
         updateSuccess: "Đã cập nhật ví thành công"
-    }
+    },
+
 };
 
 export default vi;

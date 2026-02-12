@@ -41,7 +41,7 @@ export function StatsCards({ income, expense, net, className }: { income: number
             {/* Net Worth Card */}
             <Card className="border-none bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-blue-100">{t('wallet.netWorth')}</CardTitle>
+                    <CardTitle className="text-sm font-medium text-blue-100">{t('report.periodBalance')}</CardTitle>
                     <div className="rounded-full bg-white/20 p-2">
                         <Wallet className="h-4 w-4 text-white" />
                     </div>

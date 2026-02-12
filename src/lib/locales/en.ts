@@ -129,7 +129,11 @@ const en = {
         overview: "Overview",
         title: "Reports",
         topCategories: "Top Categories",
-        trend: "Trend"
+        trend: "Trend",
+        periodBalance: "Period Balance",
+        income: "Income",
+        expense: "Expense",
+        net: "Net"
     },
     settings: {
         dataDesc: "Manage your application data.",
@@ -252,7 +256,8 @@ const en = {
         typeCredit: "Credit Account",
         unknown: "Unknown Wallet",
         updateSuccess: "Wallet updated successfully"
-    }
+    },
+
 };
 
 export default en;

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { PieChart } from "lucide-react";
 import { DateRange } from "react-day-picker";
+import { Transaction } from "@/types";
 
 import { ExpensePieChart } from "@/components/dashboard/expense-pie-chart";
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -17,7 +18,7 @@ import { useCategories } from "@/hooks/use-categories";
 
 export default function ReportsPage() {
     const { t } = useTranslation();
-    const { transactions, loading } = useTransactions(1000);
+    const { transactions, loading } = useTransactions(3000);
     const { categories } = useCategories();
 
     // Default to this month
@@ -33,6 +34,7 @@ export default function ReportsPage() {
         const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
 
         return transactions.filter(tx => {
+            if (tx.excludeFromReport) return false;
             const txDate = new Date(tx.date);
             return isWithinInterval(txDate, { start, end });
         });
@@ -72,7 +74,7 @@ export default function ReportsPage() {
 
     // Prepare Trend Data (Daily)
     const trendData = useMemo(() => {
-        const dailyMap: Record<string, { income: number, expense: number, date: string }> = {};
+        const dailyMap: Record<string, { income: number, expense: number, date: string, transactions: Transaction[] }> = {};
 
         // Initialize aggregation map
         filteredTransactions.forEach(tx => {
@@ -80,14 +82,19 @@ export default function ReportsPage() {
             const d = new Date(tx.date);
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-            if (!dailyMap[key]) dailyMap[key] = { income: 0, expense: 0, date: key };
+            if (!dailyMap[key]) dailyMap[key] = { income: 0, expense: 0, date: key, transactions: [] };
 
             if (tx.type === 'income' || tx.type === 'debt') dailyMap[key].income += tx.amount;
             else if (tx.type === 'expense' || tx.type === 'loan') dailyMap[key].expense += tx.amount;
+
+            dailyMap[key].transactions.push(tx);
         });
 
         // Sort by date components to ensure correct order
-        return Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
+        return Object.values(dailyMap).map(day => ({
+            ...day,
+            transactions: day.transactions.sort((a, b) => b.amount - a.amount)
+        })).sort((a, b) => a.date.localeCompare(b.date));
     }, [filteredTransactions]);
 
     // Prepare Category Breakdown Data (for Bar Chart)
@@ -109,16 +116,14 @@ export default function ReportsPage() {
 
             <StatsCards income={stats.income} expense={stats.expense} net={stats.net} />
 
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-12">
-                <div className="md:col-span-8">
-                    <TrendLineChart data={trendData} />
-                </div>
-                <div className="md:col-span-4 min-h-[300px]">
-                    <ExpensePieChart data={pieData} />
-                </div>
+            {/* Row 2: Trend Chart (Full Width) */}
+            <div className="grid gap-4 grid-cols-1">
+                <TrendLineChart data={trendData} />
             </div>
 
-            <div className="grid gap-4 grid-cols-1 md:col-span-12">
+            {/* Row 3: Split View (Pie + Breakdown) */}
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <ExpensePieChart data={pieData} />
                 <CategoryBreakdown data={breakdownData} />
             </div>
         </div>
