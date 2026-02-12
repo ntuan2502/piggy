@@ -46,7 +46,7 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
             <CardContent className="flex-1 pb-0">
                 <ChartContainer
                     config={chartConfig}
-                    className="mx-auto aspect-square max-h-[250px]"
+                    className="mx-auto aspect-square max-h-[300px]"
                 >
                     <PieChart>
                         <ChartTooltip
@@ -94,7 +94,7 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
                             data={data}
                             dataKey="amount"
                             nameKey="category"
-                            innerRadius={60}
+                            innerRadius={100}
                             strokeWidth={5}
                         >
                             <Label

@@ -10,6 +10,7 @@ import {
     Receipt,
     Settings,
     ChevronUp,
+    PiggyBank,
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { useTranslation } from "react-i18next";
@@ -98,8 +99,8 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/" onClick={handleNavigation}>
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                                    <span className="text-lg font-bold">P</span>
+                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                                    <PiggyBank className="size-5" />
                                 </div>
                                 <div className="flex flex-col gap-0.5 leading-none">
                                     <span className="font-semibold">{t("common.appName")}</span>
