@@ -65,14 +65,6 @@ export function TransactionForm({
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 
-    // Helper: Determine transaction type from category
-    const getCategoryType = (catId?: string): TransactionType => {
-        if (!catId) return 'expense';
-        const cat = categories.find(c => c.id === catId);
-        // Ensure the type from category matches TransactionType, default to expense
-        return (cat?.type as TransactionType) || 'expense';
-    };
-
     const form = useForm<z.infer<typeof transactionSchema>>({
         resolver: zodResolver(transactionSchema),
         defaultValues: transaction ? {
@@ -174,7 +166,15 @@ export function TransactionForm({
         if (!user) return;
         setError(null);
         try {
-            const type = getCategoryType(values.categoryId);
+            // Determine type: Use activeTab by default, but override with category type if selected
+            let type: TransactionType = activeTab as TransactionType;
+            if (values.categoryId) {
+                const cat = categories.find(c => c.id === values.categoryId);
+                if (cat) {
+                    type = cat.type as TransactionType;
+                }
+            }
+
             const tagsArray = values.tags ? values.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
 
             if (mode === "edit" && transaction) {
