@@ -21,7 +21,6 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
 } from "@/components/ui/dialog";
 import { WalletForm } from "@/components/forms/wallet-form";
 
@@ -44,19 +43,33 @@ export default function WalletsPage() {
     const [isRecalculating, setIsRecalculating] = useState(false);
 
     // Group wallets by type
-    const { availableWallets, creditWallets, availableTotal, creditTotal, netWorth } = useMemo(() => {
+    const { availableWallets, creditWallets, availableTotal, creditLimitTotal, creditDebtTotal, netWorth, creditRemainingTotal } = useMemo(() => {
         const available = wallets.filter(w => w.type === 'available');
         const credit = wallets.filter(w => w.type === 'credit');
 
         const availableSum = available.reduce((sum, w) => sum + w.balance, 0);
-        const creditSum = credit.reduce((sum, w) => sum + w.balance, 0);
-        const net = availableSum + creditSum; // Credit balances are negative
+
+        // For credit wallets in this app:
+        // initialBalance = Credit Limit (Hạn mức)
+        // balance = Available Credit (Hạn mức còn lại)
+        // Debt = Credit Limit - Available Credit
+
+        const limitSum = credit.reduce((sum, w) => sum + (w.initialBalance || 0), 0);
+        const currentRefmainingSum = credit.reduce((sum, w) => sum + w.balance, 0);
+        const debtSum = limitSum - currentRefmainingSum;
+
+        // Net Worth = Assets - Debt
+        // Assets = Available Money + (Credit Limit - Debt)? No.
+        // Net Worth = Cash - Debt.
+        const net = availableSum - debtSum;
 
         return {
             availableWallets: available,
             creditWallets: credit,
             availableTotal: availableSum,
-            creditTotal: creditSum,
+            creditLimitTotal: limitSum, // Total Credit Limit
+            creditRemainingTotal: currentRefmainingSum, // Total Remaining Credit
+            creditDebtTotal: -debtSum, // Total Debt (displayed as negative)
             netWorth: net
         };
     }, [wallets]);
@@ -101,22 +114,27 @@ export default function WalletsPage() {
                     if (!val) setEditingWallet(null);
                     setOpen(val);
                 }}>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full md:w-auto">
                         <Button
                             variant="outline"
                             onClick={handleRecalculate}
                             disabled={isRecalculating}
                             title={t('wallet.recalculate')}
+                            className="flex-1 md:flex-none"
                         >
                             {isRecalculating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                             {t('wallet.recalculate')}
                         </Button>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="w-4 h-4 mr-2" />
-                                {t('wallet.add')}
-                            </Button>
-                        </DialogTrigger>
+                        <Button
+                            className="flex-1 md:flex-none"
+                            onClick={() => {
+                                setEditingWallet(null);
+                                setOpen(true);
+                            }}
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            {t('wallet.add')}
+                        </Button>
                     </div>
                     <DialogContent className="max-w-lg">
                         <DialogHeader>
@@ -138,18 +156,61 @@ export default function WalletsPage() {
             </div>
 
             {/* Net Worth Summary */}
-            <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                <CardHeader>
-                    <CardTitle className="text-lg">{t('wallet.netWorth')}</CardTitle>
+            <Card className="bg-gradient-to-br from-blue-600 to-purple-700 text-white shadow-lg overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+                <CardHeader className="pb-1">
+                    <CardTitle className="text-lg font-medium opacity-90">{t('wallet.netWorth')}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold">{formatVNCurrency(netWorth)} VND</div>
-                    <div className="mt-2 flex gap-4 text-sm opacity-90">
-                        <div>
-                            {t('wallet.availableTotal')}: {formatVNCurrency(availableTotal)}
+
+                <CardContent className="space-y-4">
+                    {/* Main Net Worth Value */}
+                    <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4 -mt-2">
+                        <div className="text-4xl sm:text-5xl font-bold tracking-tight">
+                            {formatVNCurrency(netWorth)} <span className="text-xl sm:text-2xl font-normal opacity-80">VND</span>
                         </div>
-                        <div>
-                            {t('wallet.creditTotal')}: {formatVNCurrency(creditTotal)}
+                    </div>
+
+                    {/* Stats Panels */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-2">
+                        {/* Panel 1: Available Money (Matches breadth of Assets) */}
+                        <div className="lg:col-span-5 bg-black/10 rounded-xl p-4 border border-white/5 flex flex-col justify-between relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 bg-green-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-green-500/30 transition-colors duration-500"></div>
+
+                            <div className="flex items-center gap-2 text-sm uppercase tracking-wider opacity-90 font-medium mb-2 relative z-10">
+                                <div className="p-1.5 bg-green-500/20 rounded-md">
+                                    <Banknote className="w-4 h-4 text-green-100" />
+                                </div>
+                                {t('wallet.availableTotal')}
+                            </div>
+                            <div className="text-2xl sm:text-3xl font-bold relative z-10">{formatVNCurrency(availableTotal)}</div>
+                        </div>
+
+                        {/* Panel 2: Credit Overview (Wider to accommodate 3 metrics) */}
+                        <div className="lg:col-span-7 bg-black/10 rounded-xl p-4 border border-white/5 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 bg-red-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-red-500/30 transition-colors duration-500"></div>
+
+                            <div className="flex items-center gap-2 text-sm uppercase tracking-wider opacity-90 font-medium mb-4 relative z-10">
+                                <div className="p-1.5 bg-red-500/20 rounded-md">
+                                    <CreditCard className="w-4 h-4 text-red-100" />
+                                </div>
+                                {t('wallet.creditCommon')}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
+                                <div>
+                                    <div className="text-xs opacity-70 mb-1">{t('wallet.creditLimit')}</div>
+                                    <div className="text-lg font-semibold">{formatVNCurrency(creditLimitTotal)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-xs opacity-70 mb-1">{t('wallet.creditRemaining')}</div>
+                                    <div className="text-lg font-semibold">{formatVNCurrency(creditRemainingTotal)}</div>
+                                </div>
+                                <div>
+                                    <div className="text-xs opacity-70 mb-1">{t('wallet.currentDebt')}</div>
+                                    <div className="text-xl font-bold text-red-300">{formatVNCurrency(creditDebtTotal)}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -208,7 +269,7 @@ export default function WalletsPage() {
                     <CreditCard className="h-5 w-5 text-red-600 dark:text-red-400" />
                     <h2 className="text-2xl font-semibold">{t('wallet.typeCredit')}</h2>
                     <span className="text-muted-foreground">
-                        ({formatVNCurrency(creditTotal)} VND)
+                        ({formatVNCurrency(creditDebtTotal)} VND)
                     </span>
                 </div>
                 {creditWallets.length > 0 ? (
