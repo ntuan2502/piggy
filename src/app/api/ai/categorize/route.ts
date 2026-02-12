@@ -44,8 +44,9 @@ export async function POST(req: Request) {
         3. STRICT RULE: The category Type MUST match the transaction Type. 
            - If Transaction Type is INCOME, you MUST pick an INCOME category.
            - If Transaction Type is EXPENSE, you MUST pick an EXPENSE category.
-           - If no suitable category of the SAME TYPE exists, return null for that transaction.
-        4. "ID" in the output must match the "[ID: ...]" provided in the input.
+           - Make your BEST GUESS even if the description is vague. **NEVER return null for categoryId.**
+           - If you are unsure, pick the "Chi phí khác" (Other Expense) or "Thu nhập khác" (Other Income) category.
+        4. "ID" in the output must match the "[ID: ...]" provided in the input. Ensure EVERY transaction ID has a result.
         `;
 
         const aiModel = createGeminiModel(finalApiKey);
