@@ -298,7 +298,7 @@ export function CategoryManager() {
     return (
         <div className="space-y-3">
             <Tabs defaultValue="expense" onValueChange={setActiveTab}>
-                <div className="sticky top-0 bg-background/95 backdrop-blur z-20 flex items-center gap-2 mb-4 py-2 -mx-4 px-4 border-b">
+                <div className="bg-background/95 backdrop-blur z-20 flex items-center gap-2 mb-4 py-2 -mx-4 px-4 border-b">
                     <TabsList className="grid grid-cols-2 flex-1">
                         <TabsTrigger value="expense">{t('transaction.expense')}</TabsTrigger>
                         <TabsTrigger value="income">{t('transaction.income')}</TabsTrigger>
@@ -422,7 +422,7 @@ export function CategoryManager() {
                         <Input
                             value={resetConfirmText}
                             onChange={(e) => setResetConfirmText(e.target.value.toUpperCase())}
-                            placeholder="Type CONFIRM here"
+                            placeholder="CONFIRM"
                             className="text-center tracking-widest uppercase"
                         />
                     </div>

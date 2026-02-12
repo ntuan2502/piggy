@@ -1,1 +1,2 @@
 export const REPORT_TRANSACTION_LIMIT = 20;
+export const TRANSACTION_FETCH_LIMIT = 3000;

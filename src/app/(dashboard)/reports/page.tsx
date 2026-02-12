@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Transaction } from "@/types";
+import { TRANSACTION_FETCH_LIMIT } from "@/lib/constants";
 
 import { ExpensePieChart } from "@/components/dashboard/expense-pie-chart";
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -17,7 +18,7 @@ import { useCategories } from "@/hooks/use-categories";
 
 export default function ReportsPage() {
     const { t } = useTranslation();
-    const { transactions, loading } = useTransactions(3000);
+    const { transactions, loading } = useTransactions(TRANSACTION_FETCH_LIMIT);
     const { categories } = useCategories();
 
     // Default to this month

@@ -79,6 +79,7 @@ import { useUserProfile } from "@/hooks/use-user-profile";
 import { deleteTransaction, updateTransaction } from "@/services/transaction.service";
 import { formatVNCurrency } from "@/lib/format";
 import { Transaction } from "@/types";
+import { TRANSACTION_FETCH_LIMIT } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 // Period type definition
@@ -87,7 +88,7 @@ type PeriodType = "month" | "quarter" | "year";
 export default function TransactionsPage() {
     const { t, i18n } = useTranslation();
     const { user } = useAuth();
-    const { transactions, loading } = useTransactions(2000);
+    const { transactions, loading } = useTransactions(TRANSACTION_FETCH_LIMIT);
     const { wallets } = useWallets();
     const { categories } = useCategories();
     const { profile } = useUserProfile();
@@ -421,8 +422,8 @@ export default function TransactionsPage() {
 
     return (
         <div className="space-y-4">
-            {/* --- Sticky Header (Actions + Filters) --- */}
-            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur -mx-4 px-4 py-2 border-b space-y-3">
+            {/* --- Header (Actions + Filters) --- */}
+            <div className="bg-background/95 backdrop-blur -mx-4 px-4 py-2 border-b space-y-3">
                 {/* Actions Row */}
                 <div className="flex justify-end gap-2 w-full">
                     <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
