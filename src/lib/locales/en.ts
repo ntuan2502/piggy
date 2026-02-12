@@ -144,6 +144,10 @@ const en = {
         title: "Settings",
         apiKeyHelp: "Required for AI features. Get one at aistudio.google.com",
         geminiApiKey: "Gemini API Key",
+        aiModel: "AI Model",
+        aiModelHelp: "Select the AI model for auto-categorization.",
+        aiModelLiteDesc: "(Fast & Efficient)",
+        aiModelFlashDesc: "(Smarter)",
         userPreferences: "User Preferences",
         userPreferencesDescription: "Customize your app experience"
     },

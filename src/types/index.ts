@@ -58,6 +58,7 @@ export interface UserProfile {
     language?: 'en' | 'vi';          // Default: 'en'
     theme?: 'light' | 'dark' | 'system'; // Default: 'light'
     geminiApiKey?: string;
+    geminiModel?: string; // Default: 'gemini-2.5-flash-lite'
     createdAt?: Date | Timestamp;
     updatedAt?: Date | Timestamp;
 }

@@ -1,8 +1,10 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const createGeminiModel = (apiKey: string) => {
+// Default model if not specified
+export const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite";
+
+export const createGeminiModel = (apiKey: string, modelName: string = DEFAULT_GEMINI_MODEL) => {
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Using standard stable model
-    return genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+    return genAI.getGenerativeModel({ model: modelName });
 };

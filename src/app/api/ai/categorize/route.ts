@@ -6,7 +6,7 @@ import { Category } from '@/types';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { apiKey, categories } = body;
+        const { apiKey, categories, model } = body;
 
         // Support both single (legacy/form) and batch (auto-categorize) modes
         const transactions = body.transactions || (body.note || body.amount ? [{ note: body.note, amount: body.amount, id: 'single' }] : []);
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         4. "ID" in the output must match the "[ID: ...]" provided in the input. Ensure EVERY transaction ID has a result.
         `;
 
-        const aiModel = createGeminiModel(finalApiKey);
+        const aiModel = createGeminiModel(finalApiKey, model);
         const result = await aiModel.generateContent(prompt);
         const response = result.response;
         let text = response.text();

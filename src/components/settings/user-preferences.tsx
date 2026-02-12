@@ -23,6 +23,7 @@ export function UserPreferences() {
     const [recentTransactionsLimit, setRecentTransactionsLimit] = useState(10);
     const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
     const [selectedTheme, setSelectedTheme] = useState<string>('light');
+    const [geminiModel, setGeminiModel] = useState<string>('gemini-2.5-flash-lite');
     const [geminiApiKey, setGeminiApiKey] = useState<string>('');
     const [showApiKey, setShowApiKey] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -33,6 +34,7 @@ export function UserPreferences() {
             setRecentTransactionsLimit(profile.recentTransactionsLimit || 10);
             setSelectedLanguage(profile.language || 'en');
             setSelectedTheme(profile.theme || 'light');
+            setGeminiModel(profile.geminiModel || 'gemini-2.5-flash-lite');
             setGeminiApiKey(profile.geminiApiKey || '');
         }
     }, [profile]);
@@ -46,6 +48,7 @@ export function UserPreferences() {
                 recentTransactionsLimit,
                 language: selectedLanguage as 'en' | 'vi',
                 theme: selectedTheme as 'light' | 'dark' | 'system',
+                geminiModel,
                 geminiApiKey: geminiApiKey.trim(),
             });
 
@@ -117,6 +120,23 @@ export function UserPreferences() {
                             <SelectItem value="system">{t('theme.system')}</SelectItem>
                         </SelectContent>
                     </Select>
+                </div>
+
+                {/* AI Model Selection */}
+                <div className="space-y-2">
+                    <Label htmlFor="geminiModel">{t('settings.aiModel')}</Label>
+                    <Select value={geminiModel} onValueChange={setGeminiModel}>
+                        <SelectTrigger id="geminiModel" className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite {t('settings.aiModelLiteDesc')}</SelectItem>
+                            <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash {t('settings.aiModelFlashDesc')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                        {t('settings.aiModelHelp')}
+                    </p>
                 </div>
 
                 {/* AI API Key */}

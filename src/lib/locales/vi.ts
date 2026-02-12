@@ -144,6 +144,10 @@ const vi = {
         title: "Cài đặt",
         apiKeyHelp: "Cần thiết cho tính năng AI. Lấy key tại aistudio.google.com",
         geminiApiKey: "Gemini API Key",
+        aiModel: "Mô hình AI",
+        aiModelHelp: "Chọn mô hình AI để tự động phân loại.",
+        aiModelLiteDesc: "(Nhanh & Tiết kiệm)",
+        aiModelFlashDesc: "(Thông minh hơn)",
         userPreferences: "Tùy chọn cá nhân",
         userPreferencesDescription: "Tùy chỉnh trải nghiệm ứng dụng"
     },

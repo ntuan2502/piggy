@@ -189,7 +189,8 @@ export default function TransactionsPage() {
                         type: tx.type
                     })),
                     categories: categories.map(c => ({ id: c.id, name: c.name, type: c.type })),
-                    apiKey: profile?.geminiApiKey
+                    apiKey: profile?.geminiApiKey,
+                    model: profile?.geminiModel
                 };
 
                 const response = await fetch('/api/ai/categorize', {

@@ -141,7 +141,8 @@ export function TransactionForm({
                     categories: categories
                         .filter(c => c.type === activeTab)
                         .map(c => ({ id: c.id, name: c.name, type: c.type })),
-                    apiKey: profile?.geminiApiKey
+                    apiKey: profile?.geminiApiKey,
+                    model: profile?.geminiModel
                 })
             });
 
