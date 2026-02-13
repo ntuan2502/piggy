@@ -53,7 +53,7 @@ const vi = {
         confirm: "Đồng ý",
         confirmDelete: "Bạn có chắc chắn muốn xóa không?",
         custom: "Tùy chỉnh",
-        dashboard: "Trang chủ",
+        dashboard: "Tổng quan",
         date: "Ngày",
         delete: "Xóa",
         error: "Đã xảy ra lỗi",

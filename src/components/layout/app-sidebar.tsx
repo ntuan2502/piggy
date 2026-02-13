@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
     LayoutDashboard,
     Wallet,
-    PieChart,
+
     LogOut,
     Receipt,
     Settings,
@@ -88,7 +88,7 @@ export function AppSidebar() {
         { href: "/dashboard", icon: LayoutDashboard, label: t("common.dashboard") },
         { href: "/wallets", icon: Wallet, label: t("wallet.title") },
         { href: "/transactions", icon: Receipt, label: t("transaction.book") },
-        { href: "/reports", icon: PieChart, label: t("report.title") },
+
         { href: "/settings", icon: Settings, label: t("settings.title") },
     ];
 

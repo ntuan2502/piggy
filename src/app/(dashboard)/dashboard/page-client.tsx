@@ -1,40 +1,137 @@
 "use client";
-import { useWallets } from "@/hooks/use-wallets";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { formatVNCurrency } from "@/lib/format";
+import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { Plus, ArrowRightLeft } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRightLeft, LayoutDashboard, Wallet, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { TransactionForm } from "@/components/forms/transaction-form";
 import { TransferForm } from "@/components/forms/transfer-form";
+
+// Dashboard Components
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
-import { useState } from "react";
+import { ExpensePieChart } from "@/components/dashboard/expense-pie-chart";
+import { StatsCards } from "@/components/dashboard/stats-cards";
+import { DateRangePicker } from "@/components/dashboard/date-range-picker";
+import { TrendLineChart } from "@/components/dashboard/trend-line-chart";
+import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
+
+// Hooks & Utils
+import { useTransactions } from "@/hooks/use-transactions";
+import { useCategories } from "@/hooks/use-categories";
+import { Transaction } from "@/types";
+import { TRANSACTION_FETCH_LIMIT } from "@/lib/constants";
 
 export default function DashboardClient() {
     const { t } = useTranslation();
-    const { wallets } = useWallets();
-    const [open, setOpen] = useState(false);
-    const [transferOpen, setTransferOpen] = useState(false);
+    const { transactions, loading } = useTransactions(TRANSACTION_FETCH_LIMIT);
+    const { categories } = useCategories();
 
-    const { availableTotal, creditTotal, netWorth } = wallets.reduce((acc, w) => {
-        if (w.type === 'available') acc.availableTotal += w.balance;
-        if (w.type === 'credit') acc.creditTotal += w.balance;
-        acc.netWorth += w.balance;
-        return acc;
-    }, { availableTotal: 0, creditTotal: 0, netWorth: 0 });
+    // UI State
+    const [openAdd, setOpenAdd] = useState(false);
+    const [openTransfer, setOpenTransfer] = useState(false);
+
+    // Date Range State (Default: This Month)
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date())
+    });
+
+    // --- Report Logic from reports/page-client.tsx ---
+
+    // 1. Filter transactions by date range
+    const filteredTransactions = useMemo(() => {
+        if (!dateRange?.from) return [];
+        const start = startOfDay(dateRange.from);
+        const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+
+        return transactions.filter(tx => {
+            if (tx.excludeFromReport) return false;
+            const txDate = new Date(tx.date);
+            return isWithinInterval(txDate, { start, end });
+        });
+    }, [transactions, dateRange]);
+
+    // 2. Calculate Stats (Income, Expense, Net)
+    const stats = useMemo(() => {
+        let income = 0;
+        let expense = 0;
+        filteredTransactions.forEach(tx => {
+            if (tx.type === 'income') income += tx.amount;
+            else if (tx.type === 'expense') expense += tx.amount;
+        });
+        return { income, expense, net: income - expense };
+    }, [filteredTransactions]);
+
+    // 3. Prepare Pie Data (Expense by Category)
+    const pieData = useMemo(() => {
+        const expenseMap: Record<string, { amount: number, transactions: Transaction[] }> = {};
+        const colors = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6", "#d946ef", "#f43f5e"];
+
+        filteredTransactions.filter(tx => tx.type === 'expense').forEach(tx => {
+            const catName = categories.find(c => c.id === tx.categoryId)?.name || t('category.unknown');
+
+            if (!expenseMap[catName]) {
+                expenseMap[catName] = { amount: 0, transactions: [] };
+            }
+
+            expenseMap[catName].amount += tx.amount;
+            expenseMap[catName].transactions.push(tx);
+        });
+
+        return Object.entries(expenseMap)
+            .map(([category, data], index) => ({
+                category,
+                amount: data.amount,
+                fill: colors[index % colors.length],
+                transactions: data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            }))
+            .filter(item => item.amount > 0)
+            .sort((a, b) => b.amount - a.amount);
+    }, [filteredTransactions, categories, t]);
+
+    // 4. Prepare Trend Data (Daily)
+    const trendData = useMemo(() => {
+        const dailyMap: Record<string, { income: number, expense: number, date: string, transactions: Transaction[] }> = {};
+
+        filteredTransactions.forEach(tx => {
+            const d = new Date(tx.date);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+            if (!dailyMap[key]) dailyMap[key] = { income: 0, expense: 0, date: key, transactions: [] };
+
+            if (tx.type === 'income') dailyMap[key].income += tx.amount;
+            else if (tx.type === 'expense') dailyMap[key].expense += tx.amount;
+
+            dailyMap[key].transactions.push(tx);
+        });
+
+        return Object.values(dailyMap).map(day => ({
+            ...day,
+            transactions: day.transactions.sort((a, b) => b.amount - a.amount)
+        })).sort((a, b) => a.date.localeCompare(b.date));
+    }, [filteredTransactions]);
+
+    // 5. Breakdown Data
+    const breakdownData = useMemo(() => pieData, [pieData]);
+
+    if (loading) return <div>{t('common.loading')}</div>;
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
-                <div className="flex items-center gap-2">
-                    <LayoutDashboard className="h-8 w-8" />
-                    <h2 className="text-3xl font-bold tracking-tight">{t('common.dashboard')}</h2>
+        <div className="space-y-6 pb-20">
+            {/* Header: Actions + DatePicker */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="w-full md:w-auto">
+                    <DateRangePicker date={dateRange} setDate={setDateRange} className="w-full md:w-[260px]" />
                 </div>
-                <div className="flex gap-2">
-                    <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+
+                <div className="flex flex-row gap-2 w-full md:w-auto">
+                    {/* Transfer Button */}
+                    <Dialog open={openTransfer} onOpenChange={setOpenTransfer}>
                         <DialogTrigger asChild>
-                            <Button variant="outline">
+                            <Button variant="outline" className="flex-1 md:w-auto md:flex-none">
                                 <ArrowRightLeft className="mr-2 h-4 w-4" /> {t('transaction.transfer')}
                             </Button>
                         </DialogTrigger>
@@ -43,12 +140,14 @@ export default function DashboardClient() {
                                 <DialogTitle>{t('transaction.transfer')}</DialogTitle>
                                 <DialogDescription>{t('transaction.transferDescription')}</DialogDescription>
                             </DialogHeader>
-                            <TransferForm onSuccess={() => setTransferOpen(false)} />
+                            <TransferForm onSuccess={() => setOpenTransfer(false)} />
                         </DialogContent>
                     </Dialog>
-                    <Dialog open={open} onOpenChange={setOpen}>
+
+                    {/* Add Transaction Button */}
+                    <Dialog open={openAdd} onOpenChange={setOpenAdd}>
                         <DialogTrigger asChild>
-                            <Button>
+                            <Button className="flex-1 md:w-auto md:flex-none">
                                 <Plus className="mr-2 h-4 w-4" /> {t('transaction.add')}
                             </Button>
                         </DialogTrigger>
@@ -57,67 +156,30 @@ export default function DashboardClient() {
                                 <DialogTitle>{t('transaction.add')}</DialogTitle>
                                 <DialogDescription>{t('transaction.description')}</DialogDescription>
                             </DialogHeader>
-                            <TransactionForm onSuccess={() => setOpen(false)} />
+                            <TransactionForm onSuccess={() => setOpenAdd(false)} />
                         </DialogContent>
                     </Dialog>
                 </div>
             </div>
 
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 shadow-sm py-0 gap-0">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-                        <CardTitle className="text-xs font-semibold uppercase text-blue-700/70 dark:text-blue-400/70">{t('wallet.netWorth')}</CardTitle>
-                        <div className="rounded-full bg-blue-500/10 p-1">
-                            <Wallet className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                        <div className="text-lg font-bold text-blue-700 dark:text-blue-400">
-                            {formatVNCurrency(netWorth)} VND
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 shadow-sm py-0 gap-0">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-                        <CardTitle className="text-xs font-semibold uppercase text-green-700/70 dark:text-green-400/70">{t('wallet.availableTotal')}</CardTitle>
-                        <div className="rounded-full bg-green-500/10 p-1">
-                            <ArrowUpIcon className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                        <div className="text-lg font-bold text-green-700 dark:text-green-400">
-                            {formatVNCurrency(availableTotal)} VND
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 shadow-sm py-0 gap-0">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-                        <CardTitle className="text-xs font-semibold uppercase text-red-700/70 dark:text-red-400/70">{t('wallet.creditTotal')}</CardTitle>
-                        <div className="rounded-full bg-red-500/10 p-1">
-                            <ArrowDownIcon className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                        <div className="text-lg font-bold text-red-700 dark:text-red-400">
-                            {formatVNCurrency(creditTotal)} VND
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* Section 1: Stats Cards (Summary) */}
+            <StatsCards income={stats.income} expense={stats.expense} net={stats.net} />
 
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-1 lg:grid-cols-7">
-                <RecentTransactions />
-                {/* Placeholder for future Chart */}
-                <Card className="col-span-4">
-                    <CardHeader>
-                        <CardTitle>{t('report.overview')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-[200px] flex items-center justify-center text-gray-400">
-                            {t('report.comingSoon')}
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="grid gap-6 grid-cols-1 xl:grid-cols-7">
+                {/* Section 2: Main Area (Trend + Recent) - Span 4/7 */}
+                <div className="xl:col-span-4 space-y-6">
+                    {/* Trend Chart */}
+                    <TrendLineChart data={trendData} />
+
+                    {/* Recent Transactions */}
+                    <RecentTransactions />
+                </div>
+
+                {/* Section 3: Side Area (Pie + Breakdown) - Span 3/7 */}
+                <div className="xl:col-span-3 space-y-6">
+                    <ExpensePieChart data={pieData} />
+                    <CategoryBreakdown data={breakdownData} />
+                </div>
             </div>
         </div>
     );
