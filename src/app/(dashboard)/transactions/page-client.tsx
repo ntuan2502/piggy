@@ -331,9 +331,13 @@ export default function TransactionsClient() {
             if (walletFilter !== "all" && transaction.walletId !== walletFilter) return false;
 
             if (categoryFilter !== "all") {
-                const category = getCategory(transaction.categoryId);
-                if (!category) return false;
-                if (category.id !== categoryFilter && category.parentId !== categoryFilter) return false;
+                if (categoryFilter === "transfer") {
+                    if (!transaction.isTransfer) return false;
+                } else {
+                    const category = getCategory(transaction.categoryId);
+                    if (!category) return false;
+                    if (category.id !== categoryFilter && category.parentId !== categoryFilter) return false;
+                }
             }
 
             if (searchQuery) {
@@ -583,6 +587,12 @@ export default function TransactionsClient() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">{t("transaction.all")}</SelectItem>
+                                    <SelectItem value="transfer">
+                                        <div className="flex items-center gap-2">
+                                            <ArrowRightLeft className="h-3.5 w-3.5" />
+                                            <span>{t("transaction.transfer")}</span>
+                                        </div>
+                                    </SelectItem>
                                     {rootCategories.map(cat => (
                                         <SelectItem key={cat.id} value={cat.id}>
                                             <div className="flex items-center gap-2">
@@ -682,6 +692,12 @@ export default function TransactionsClient() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">{t("transaction.all")}</SelectItem>
+                                        <SelectItem value="transfer">
+                                            <div className="flex items-center gap-2">
+                                                <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                                                <span>{t("transaction.transfer")}</span>
+                                            </div>
+                                        </SelectItem>
                                         {rootCategories.map(cat => (
                                             <SelectItem key={cat.id} value={cat.id}>
                                                 <div className="flex items-center gap-2">
@@ -794,6 +810,7 @@ export default function TransactionsClient() {
                                 {group.transactions.map((transaction) => {
                                     const category = getCategory(transaction.categoryId);
                                     const isIncome = transaction.type === "income";
+                                    const isTransfer = transaction.isTransfer;
 
                                     return (
                                         <div
@@ -801,15 +818,32 @@ export default function TransactionsClient() {
                                             className="px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between hover:bg-muted/50 transition-colors group"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <div className="flex items-center justify-center size-8 sm:size-9 rounded-full shrink-0 bg-background border shadow-xs">
-                                                    {category?.icon ? (
+                                                <div
+                                                    className={cn(
+                                                        "flex items-center justify-center size-8 sm:size-9 rounded-full shrink-0 border",
+                                                        isTransfer
+                                                            ? (isIncome
+                                                                ? "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+                                                                : "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800")
+                                                            : "bg-background shadow-xs"
+                                                    )}
+                                                    style={!isTransfer && category?.color ? {
+                                                        backgroundColor: category.color + '15',
+                                                        borderColor: category.color + '40'
+                                                    } : undefined}
+                                                >
+                                                    {isTransfer ? (
+                                                        <ArrowRightLeft className={cn("h-4 w-4 sm:h-4.5 sm:w-4.5", isIncome ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400")} />
+                                                    ) : category?.icon ? (
                                                         <CategoryIcon iconName={category.icon} color={category.color} className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
                                                     ) : (
                                                         <span className="text-[10px] font-bold text-muted-foreground">{category?.name?.[0] || "?"}</span>
                                                     )}
                                                 </div>
                                                 <div className="min-w-0 flex flex-col gap-0.5">
-                                                    <span className="text-sm font-medium truncate leading-none">{category?.name || t("category.unknown")}</span>
+                                                    <span className="text-sm font-medium truncate leading-none">
+                                                        {isTransfer ? t('transaction.transfer') : (category?.name || t("category.unknown"))}
+                                                    </span>
                                                     {transaction.note && (
                                                         <span className="text-xs text-muted-foreground truncate leading-none">{transaction.note}</span>
                                                     )}
