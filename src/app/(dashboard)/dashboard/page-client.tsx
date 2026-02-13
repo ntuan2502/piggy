@@ -114,8 +114,38 @@ export default function DashboardClient() {
         })).sort((a, b) => a.date.localeCompare(b.date));
     }, [filteredTransactions]);
 
-    // 5. Breakdown Data
-    const breakdownData = useMemo(() => pieData, [pieData]);
+    // 5. Breakdown Data (Expense)
+    const expenseBreakdownData = useMemo(() => pieData, [pieData]);
+
+    // 6. Breakdown Data (Income)
+    const incomePieData = useMemo(() => {
+        const incomeMap: Record<string, { amount: number, transactions: Transaction[] }> = {};
+        const colors = ["#22c55e", "#16a34a", "#15803d", "#14532d", "#84cc16", "#a3e635", "#bef264", "#4ade80", "#22d3ee", "#06b6d4", "#0891b2", "#0e7490"];
+
+        filteredTransactions.filter(tx => tx.type === 'income').forEach(tx => {
+            const catName = categories.find(c => c.id === tx.categoryId)?.name || t('category.unknown');
+            if (tx.isTransfer) return; // Skip transfers for income breakdown to avoid noise? Or keep? Usually income reports exclude internal transfers if possible, but let's stick to type check.
+
+            if (!incomeMap[catName]) {
+                incomeMap[catName] = { amount: 0, transactions: [] };
+            }
+
+            incomeMap[catName].amount += tx.amount;
+            incomeMap[catName].transactions.push(tx);
+        });
+
+        return Object.entries(incomeMap)
+            .map(([category, data], index) => ({
+                category,
+                amount: data.amount,
+                fill: colors[index % colors.length],
+                transactions: data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            }))
+            .filter(item => item.amount > 0)
+            .sort((a, b) => b.amount - a.amount);
+    }, [filteredTransactions, categories, t]);
+
+    const incomeBreakdownData = useMemo(() => incomePieData, [incomePieData]);
 
     if (loading) return <div>{t('common.loading')}</div>;
 
@@ -165,21 +195,31 @@ export default function DashboardClient() {
             {/* Section 1: Stats Cards (Summary) */}
             <StatsCards income={stats.income} expense={stats.expense} net={stats.net} />
 
-            <div className="grid gap-6 grid-cols-1 xl:grid-cols-7">
-                {/* Section 2: Main Area (Trend + Recent) - Span 4/7 */}
-                <div className="xl:col-span-4 space-y-6">
-                    {/* Trend Chart */}
+            {/* Main Layout Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-7 gap-6">
+
+                {/* Row 1: Trend (4) + Expense Chart (3) */}
+                <div className="xl:col-span-4 h-full">
                     <TrendLineChart data={trendData} />
-
-                    {/* Recent Transactions */}
-                    <RecentTransactions />
                 </div>
-
-                {/* Section 3: Side Area (Pie + Breakdown) - Span 3/7 */}
-                <div className="xl:col-span-3 space-y-6">
+                <div className="xl:col-span-3 h-full">
                     <ExpensePieChart data={pieData} />
-                    <CategoryBreakdown data={breakdownData} />
                 </div>
+
+                {/* Row 2: Recent (1/3) + Top Expense (1/3) + Top Income (1/3) */}
+                {/* Note: RecentTransactions renders a card. We'll wrap them in a 3-col grid spanning full width */}
+                <div className="xl:col-span-7 grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div className="space-y-6">
+                        <RecentTransactions />
+                    </div>
+                    <div className="space-y-6">
+                        <CategoryBreakdown data={expenseBreakdownData} title={t('report.topExpense')} type="expense" />
+                    </div>
+                    <div className="space-y-6">
+                        <CategoryBreakdown data={incomeBreakdownData} title={t('report.topIncome')} type="income" />
+                    </div>
+                </div>
+
             </div>
         </div>
     );

@@ -12,7 +12,6 @@ import { vi, enUS } from "date-fns/locale";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
@@ -39,14 +38,13 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
 
     return (
         <Card className="flex flex-col">
-            <CardHeader className="items-center pb-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>{t('report.monthlyExpense')}</CardTitle>
-                <CardDescription>{t('category.item')}</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 pb-0">
+            <CardContent>
                 <ChartContainer
                     config={chartConfig}
-                    className="mx-auto aspect-square max-h-[300px]"
+                    className="mx-auto h-[350px] w-full"
                 >
                     <PieChart>
                         <ChartTooltip
@@ -55,12 +53,16 @@ export function ExpensePieChart({ data }: { data: { category: string; amount: nu
                                 if (active && payload && payload.length) {
                                     const data = payload[0].payload;
                                     const topTransactions = data.transactions.slice(0, REPORT_TRANSACTION_LIMIT);
+                                    const percentage = total > 0 ? ((data.amount / total) * 100).toFixed(1) : "0";
 
                                     return (
                                         <div className="bg-background border rounded-lg p-3 shadow-lg text-xs w-[280px] z-50">
                                             <div className="flex items-center justify-between mb-2 pb-2 border-b">
                                                 <span className="font-bold text-sm" style={{ color: data.fill }}>{data.category}</span>
-                                                <span className="font-mono font-bold text-sm">{formatVNCurrency(data.amount)}</span>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="font-mono font-bold text-sm">{formatVNCurrency(data.amount)}</span>
+                                                    <span className="text-[10px] text-muted-foreground">({percentage}%)</span>
+                                                </div>
                                             </div>
 
                                             {topTransactions.length > 0 && (

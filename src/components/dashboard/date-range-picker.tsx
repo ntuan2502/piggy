@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { CalendarIcon } from "lucide-react"
-import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, startOfWeek, endOfWeek, subWeeks, startOfQuarter, endOfQuarter, isSameDay } from "date-fns"
+import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, startOfWeek, endOfWeek, subWeeks, startOfQuarter, endOfQuarter, subQuarters, subYears, isSameDay } from "date-fns"
 import { vi, enUS } from "date-fns/locale"
 import { DateRange } from "react-day-picker"
 import { cn } from "@/lib/utils"
@@ -36,7 +36,9 @@ export function DateRangePicker({
         { key: 'thisMonth', label: t('common.thisMonth'), getValue: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
         { key: 'lastMonth', label: t('common.lastMonth'), getValue: () => ({ from: startOfMonth(subMonths(new Date(), 1)), to: endOfMonth(subMonths(new Date(), 1)) }) },
         { key: 'thisQuarter', label: t('common.thisQuarter'), getValue: () => ({ from: startOfQuarter(new Date()), to: endOfQuarter(new Date()) }) },
+        { key: 'lastQuarter', label: t('common.lastQuarter'), getValue: () => ({ from: startOfQuarter(subQuarters(new Date(), 1)), to: endOfQuarter(subQuarters(new Date(), 1)) }) },
         { key: 'thisYear', label: t('common.thisYear'), getValue: () => ({ from: startOfYear(new Date()), to: endOfYear(new Date()) }) },
+        { key: 'lastYear', label: t('common.lastYear'), getValue: () => ({ from: startOfYear(subYears(new Date(), 1)), to: endOfYear(subYears(new Date(), 1)) }) },
         { key: 'custom', label: t('common.custom'), getValue: () => undefined },
     ]
 
