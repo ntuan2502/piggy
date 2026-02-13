@@ -14,6 +14,8 @@ import {
     Calendar,
     Plus,
     ArrowRightLeft,
+    Pencil,
+    Trash2,
 } from "lucide-react";
 import {
     format,
@@ -796,8 +798,7 @@ export default function TransactionsClient() {
                                     return (
                                         <div
                                             key={transaction.id}
-                                            className="px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer group"
-                                            onClick={() => handleEdit(transaction)}
+                                            className="px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between hover:bg-muted/50 transition-colors group"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <div className="flex items-center justify-center size-8 sm:size-9 rounded-full shrink-0 bg-background border shadow-xs">
@@ -823,18 +824,35 @@ export default function TransactionsClient() {
                                                     {isIncome ? "+" : "-"}
                                                     {formatVNCurrency(transaction.amount)}
                                                 </span>
-                                                <div className="h-4 flex items-center">
-                                                    {/* Mobile: Always hide delete unless swiped (future). Desktop: Hover */}
-                                                    <div className="hidden sm:flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                        <button
-                                                            className="text-[10px] font-medium text-destructive hover:underline uppercase tracking-wide"
+                                                <div className="h-8 flex items-center">
+                                                    {/* Mobile & Desktop: Always visible (opacity 70%). */}
+                                                    <div className="flex items-center gap-1 opacity-70 transition-opacity duration-200">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleEdit(transaction);
+                                                            }}
+                                                            title={t("transaction.edit")}
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                            <span className="sr-only">{t("transaction.edit")}</span>
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleDeleteClick(transaction.id);
                                                             }}
+                                                            title={t("common.delete")}
                                                         >
-                                                            {t("common.delete")}
-                                                        </button>
+                                                            <Trash2 className="h-4 w-4" />
+                                                            <span className="sr-only">{t("common.delete")}</span>
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </div>
