@@ -78,7 +78,6 @@ function SortableWalletCard({
         transition,
         zIndex: isDragging ? 50 : 'auto',
         position: 'relative' as const,
-        touchAction: 'none'
     };
 
     const isCredit = wallet.type === 'credit';
@@ -137,7 +136,7 @@ function SortableWalletCard({
 
                     {/* Drag Handle - Valid target for drag listeners */}
                     <div
-                        className="absolute top-0 right-0 p-3 text-muted-foreground opacity-10 md:opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:bg-muted/50 rounded-bl-lg z-10"
+                        className="absolute top-0 right-0 p-3 text-muted-foreground opacity-10 md:opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:bg-muted/50 rounded-bl-lg z-10 touch-none"
                         {...attributes}
                         {...listeners}
                         onClick={(e) => {
